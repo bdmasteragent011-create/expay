@@ -8,7 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, ArrowLeft, Save, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { 
+  Loader2, ArrowLeft, Save, Plus, Trash2, RefreshCw, 
+  User, Key, Shield, Wallet, CreditCard, MessageSquare, 
+  ArrowDownCircle, ArrowUpCircle, Percent, TrendingUp,
+  CheckCircle, XCircle, Clock, Sparkles
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -434,104 +439,167 @@ export default function AdminEditUser() {
 
   return (
     <AdminLayout>
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/admin/users')}
-            className="p-2 rounded-xl hover:bg-muted/50 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h2 className="text-xl font-bold">{agent.name}</h2>
-            <p className="text-sm text-muted-foreground">{agent.email}</p>
+      <div className="space-y-5">
+        {/* Premium Header */}
+        <div className="glass-card rounded-2xl p-4 animate-slide-up">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/admin/users')}
+              className="p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition-all duration-300 hover:-translate-x-1"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-foreground">{agent.name}</h2>
+                {!agent.is_banned && (
+                  <span className="status-dot status-dot-success" />
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">{agent.email}</p>
+            </div>
+            <div className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-semibold",
+              agent.is_banned 
+                ? "bg-destructive/10 text-destructive border border-destructive/20"
+                : "bg-success/10 text-success border border-success/20"
+            )}>
+              {agent.is_banned ? 'Banned' : 'Active'}
+            </div>
           </div>
         </div>
 
         {/* Section A: Profile */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Profile</h3>
-          <div className="grid gap-3">
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '50ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+              <User className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground">Profile Information</h3>
+          </div>
+          <div className="grid gap-4">
             <div>
-              <Label className="text-xs">Name</Label>
-              <Input value={profileForm.name} onChange={(e) => setProfileForm(p => ({ ...p, name: e.target.value }))} className="h-10 rounded-xl" />
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Full Name</Label>
+              <Input value={profileForm.name} onChange={(e) => setProfileForm(p => ({ ...p, name: e.target.value }))} className="h-11 rounded-xl border-border/50 focus:border-primary" />
             </div>
             <div>
-              <Label className="text-xs">Email (Read Only)</Label>
-              <Input value={profileForm.email} disabled className="h-10 rounded-xl bg-muted/50" />
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email Address</Label>
+              <Input value={profileForm.email} disabled className="h-11 rounded-xl bg-muted/30 border-border/30" />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Phone</Label>
-                <Input value={profileForm.phone} onChange={(e) => setProfileForm(p => ({ ...p, phone: e.target.value }))} className="h-10 rounded-xl" />
+                <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Phone</Label>
+                <Input value={profileForm.phone} onChange={(e) => setProfileForm(p => ({ ...p, phone: e.target.value }))} className="h-11 rounded-xl border-border/50" />
               </div>
               <div>
-                <Label className="text-xs">Agent ID</Label>
-                <Input value={profileForm.agent_id} onChange={(e) => setProfileForm(p => ({ ...p, agent_id: e.target.value }))} className="h-10 rounded-xl" />
+                <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Agent ID</Label>
+                <Input value={profileForm.agent_id} onChange={(e) => setProfileForm(p => ({ ...p, agent_id: e.target.value }))} className="h-11 rounded-xl border-border/50" />
               </div>
             </div>
             <div>
-              <Label className="text-xs">District</Label>
-              <Input value={profileForm.district} onChange={(e) => setProfileForm(p => ({ ...p, district: e.target.value }))} className="h-10 rounded-xl" />
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">District</Label>
+              <Input value={profileForm.district} onChange={(e) => setProfileForm(p => ({ ...p, district: e.target.value }))} className="h-11 rounded-xl border-border/50" />
             </div>
           </div>
-          <Button onClick={handleSaveProfile} disabled={saving === 'profile'} className="w-full h-10 rounded-xl">
+          <Button onClick={handleSaveProfile} disabled={saving === 'profile'} className="w-full h-11 rounded-xl gradient-primary text-primary-foreground btn-glow">
             {saving === 'profile' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 mr-2" />Save Profile</>}
           </Button>
         </div>
 
         {/* Section B: Activation Code */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Activation Code</h3>
-          <Input value={activationCode} onChange={(e) => setActivationCode(e.target.value)} className="h-10 rounded-xl" />
-          <Button onClick={handleUpdateActivationCode} disabled={saving === 'activation'} variant="outline" className="w-full h-10 rounded-xl">
-            {saving === 'activation' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update Code'}
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+              <Key className="w-5 h-5 text-accent" />
+            </div>
+            <h3 className="font-semibold text-foreground">Activation Code</h3>
+          </div>
+          <Input value={activationCode} onChange={(e) => setActivationCode(e.target.value)} className="h-11 rounded-xl font-mono border-border/50" />
+          <Button onClick={handleUpdateActivationCode} disabled={saving === 'activation'} variant="outline" className="w-full h-11 rounded-xl border-accent/30 hover:bg-accent/10 hover:border-accent/50">
+            {saving === 'activation' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update Activation Code'}
           </Button>
         </div>
 
         {/* Section C: Account Status */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Account Status</h3>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-            <span>Status: <span className={cn("font-semibold", agent.is_banned ? "text-destructive" : "text-success")}>{agent.is_banned ? 'Banned' : 'Active'}</span></span>
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '150ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning/20 to-warning/10 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-warning" />
+            </div>
+            <h3 className="font-semibold text-foreground">Account Status</h3>
           </div>
-          <Button onClick={handleBanToggle} disabled={saving === 'ban'} variant={agent.is_banned ? "default" : "destructive"} className="w-full h-10 rounded-xl">
+          <div className={cn(
+            "flex items-center justify-between p-4 rounded-xl border transition-colors",
+            agent.is_banned 
+              ? "bg-destructive/5 border-destructive/20"
+              : "bg-success/5 border-success/20"
+          )}>
+            <div className="flex items-center gap-3">
+              {agent.is_banned ? (
+                <XCircle className="w-5 h-5 text-destructive" />
+              ) : (
+                <CheckCircle className="w-5 h-5 text-success" />
+              )}
+              <span className="font-medium">Account is {agent.is_banned ? 'Banned' : 'Active'}</span>
+            </div>
+          </div>
+          <Button onClick={handleBanToggle} disabled={saving === 'ban'} variant={agent.is_banned ? "default" : "destructive"} className="w-full h-11 rounded-xl">
             {saving === 'ban' ? <Loader2 className="w-4 h-4 animate-spin" /> : agent.is_banned ? 'Unban User' : 'Ban User'}
           </Button>
         </div>
 
-        {/* Section D: Credits Control */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Credits Control</h3>
-          <div className="p-3 rounded-xl bg-success/10 text-center">
-            <p className="text-xs text-muted-foreground">Available Credits</p>
-            <p className="text-2xl font-bold text-success">৳{(agent.available_credits || 0).toLocaleString()}</p>
+        {/* Section D: Credits Control - Premium */}
+        <div className="card-3d rounded-2xl overflow-hidden animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <div className="bg-gradient-to-r from-success/20 via-success/10 to-transparent p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-success" />
+              </div>
+              <h3 className="font-semibold text-foreground">Credits Control</h3>
+            </div>
+            <div className="relative p-5 rounded-xl bg-card/80 backdrop-blur border border-success/20">
+              <Sparkles className="absolute top-3 right-3 w-5 h-5 text-success/40 animate-pulse-soft" />
+              <p className="text-xs text-muted-foreground mb-1">Available Credits</p>
+              <p className="text-3xl font-bold text-gradient-primary">৳{(agent.available_credits || 0).toLocaleString()}</p>
+            </div>
           </div>
-          <Input type="number" value={creditAmount} onChange={(e) => setCreditAmount(e.target.value)} placeholder="Amount" className="h-10 rounded-xl" />
-          <div className="grid grid-cols-2 gap-2">
-            <Button onClick={handleIncreaseCredits} disabled={saving === 'credit-inc'} className="h-10 rounded-xl bg-success hover:bg-success/90">
-              {saving === 'credit-inc' ? <Loader2 className="w-4 h-4 animate-spin" /> : '+ Increase'}
-            </Button>
-            <Button onClick={handleDecreaseCredits} disabled={saving === 'credit-dec'} variant="destructive" className="h-10 rounded-xl">
-              {saving === 'credit-dec' ? <Loader2 className="w-4 h-4 animate-spin" /> : '- Decrease'}
-            </Button>
+          <div className="p-5 bg-card space-y-4">
+            <Input type="number" value={creditAmount} onChange={(e) => setCreditAmount(e.target.value)} placeholder="Enter amount" className="h-11 rounded-xl border-border/50" />
+            <div className="grid grid-cols-2 gap-3">
+              <Button onClick={handleIncreaseCredits} disabled={saving === 'credit-inc'} className="h-11 rounded-xl bg-success hover:bg-success/90 btn-glow">
+                {saving === 'credit-inc' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-1" />Increase</>}
+              </Button>
+              <Button onClick={handleDecreaseCredits} disabled={saving === 'credit-dec'} variant="destructive" className="h-11 rounded-xl">
+                {saving === 'credit-dec' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Trash2 className="w-4 h-4 mr-1" />Decrease</>}
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Section E: Totals Control */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Totals Control</h3>
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <Input type="number" value={totalPayIn} onChange={(e) => setTotalPayIn(e.target.value)} placeholder="Total Pay In" className="h-10 rounded-xl flex-1" />
-              <Button onClick={() => handleUpdateTotals('total_pay_in')} disabled={saving === 'total_pay_in'} size="sm" className="h-10 rounded-xl">
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '250ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground">Totals Control</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Total Pay In</Label>
+                <Input type="number" value={totalPayIn} onChange={(e) => setTotalPayIn(e.target.value)} placeholder="Total Pay In" className="h-11 rounded-xl border-border/50" />
+              </div>
+              <Button onClick={() => handleUpdateTotals('total_pay_in')} disabled={saving === 'total_pay_in'} className="h-11 rounded-xl self-end px-6">
                 {saving === 'total_pay_in' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
               </Button>
             </div>
-            <div className="flex gap-2">
-              <Input type="number" value={totalPayOut} onChange={(e) => setTotalPayOut(e.target.value)} placeholder="Total Pay Out" className="h-10 rounded-xl flex-1" />
-              <Button onClick={() => handleUpdateTotals('total_pay_out')} disabled={saving === 'total_pay_out'} size="sm" className="h-10 rounded-xl">
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Total Pay Out</Label>
+                <Input type="number" value={totalPayOut} onChange={(e) => setTotalPayOut(e.target.value)} placeholder="Total Pay Out" className="h-11 rounded-xl border-border/50" />
+              </div>
+              <Button onClick={() => handleUpdateTotals('total_pay_out')} disabled={saving === 'total_pay_out'} className="h-11 rounded-xl self-end px-6">
                 {saving === 'total_pay_out' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
               </Button>
             </div>
@@ -539,154 +607,230 @@ export default function AdminEditUser() {
         </div>
 
         {/* Section F: Commission & Max Credit */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Commission & Max Credit</h3>
-          <div className="flex gap-2">
-            <Input type="number" value={commission} onChange={(e) => setCommission(e.target.value)} placeholder="Commission" className="h-10 rounded-xl flex-1" />
-            <Button onClick={handleUpdateCommission} disabled={saving === 'commission'} size="sm" className="h-10 rounded-xl">
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning/20 to-warning/10 flex items-center justify-center">
+              <Percent className="w-5 h-5 text-warning" />
+            </div>
+            <h3 className="font-semibold text-foreground">Commission & Max Credit</h3>
+          </div>
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Commission Balance</Label>
+              <Input type="number" value={commission} onChange={(e) => setCommission(e.target.value)} placeholder="Commission" className="h-11 rounded-xl border-border/50" />
+            </div>
+            <Button onClick={handleUpdateCommission} disabled={saving === 'commission'} className="h-11 rounded-xl self-end px-6">
               {saving === 'commission' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
             </Button>
           </div>
-          <div className="flex gap-2">
-            <Input type="number" value={maxCredit} onChange={(e) => setMaxCredit(e.target.value)} placeholder="Max Credit" className="h-10 rounded-xl flex-1" />
-            <Button onClick={handleUpdateMaxCredit} disabled={saving === 'maxcredit'} size="sm" className="h-10 rounded-xl">
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Max Credit Limit</Label>
+              <Input type="number" value={maxCredit} onChange={(e) => setMaxCredit(e.target.value)} placeholder="Max Credit" className="h-11 rounded-xl border-border/50" />
+            </div>
+            <Button onClick={handleUpdateMaxCredit} disabled={saving === 'maxcredit'} className="h-11 rounded-xl self-end px-6">
               {saving === 'maxcredit' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
             </Button>
           </div>
         </div>
 
         {/* Section G: Wallets */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Wallets</h3>
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '350ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-accent" />
+            </div>
+            <h3 className="font-semibold text-foreground">Wallet Management</h3>
+          </div>
           {wallets.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-2">No wallets</p>
+            <div className="text-center py-6 rounded-xl bg-muted/20 border border-dashed border-border">
+              <CreditCard className="w-10 h-10 text-muted-foreground/50 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No wallets configured</p>
+            </div>
           ) : (
-            <div className="space-y-2">
-              {wallets.map((wallet) => (
-                <div key={wallet.id} className="p-3 rounded-xl bg-muted/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{wallet.wallet_number}</p>
-                      <p className="text-xs text-muted-foreground">Balance: ৳{wallet.balance}</p>
+            <div className="space-y-3">
+              {wallets.map((wallet, index) => (
+                <div key={wallet.id} className={cn(
+                  "p-4 rounded-xl border transition-all",
+                  wallet.is_active 
+                    ? "bg-success/5 border-success/20" 
+                    : "bg-muted/30 border-border/50"
+                )}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold",
+                        wallet.is_active ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"
+                      )}>
+                        #{index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium">{wallet.wallet_number}</p>
+                        <p className="text-sm text-muted-foreground">Balance: ৳{wallet.balance.toLocaleString()}</p>
+                      </div>
                     </div>
-                    <Button size="icon" variant="ghost" onClick={() => handleDeleteWallet(wallet.id)} className="h-8 w-8 text-destructive">
+                    <Button size="icon" variant="ghost" onClick={() => handleDeleteWallet(wallet.id)} className="h-9 w-9 text-destructive hover:bg-destructive/10 rounded-lg">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                    <span className="text-xs text-muted-foreground">Wallet Status</span>
+                  <div className="flex items-center justify-between pt-3 border-t border-border/50">
                     <div className="flex items-center gap-2">
-                      <span className={cn("text-xs font-medium", wallet.is_active ? "text-success" : "text-destructive")}>
-                        {wallet.is_active ? 'ON' : 'OFF'}
-                      </span>
-                      <Switch checked={wallet.is_active} onCheckedChange={() => handleToggleWallet(wallet)} />
+                      <span className={cn("status-dot", wallet.is_active ? "status-dot-success" : "status-dot-destructive")} />
+                      <span className="text-sm">{wallet.is_active ? 'Active' : 'Inactive'}</span>
                     </div>
+                    <Switch checked={wallet.is_active} onCheckedChange={() => handleToggleWallet(wallet)} />
                   </div>
                 </div>
               ))}
             </div>
           )}
-          <div className="space-y-2 pt-2 border-t border-border/50">
-            <p className="text-xs text-muted-foreground">Add New Wallet</p>
+          <div className="space-y-3 pt-4 border-t border-border/50">
+            <Label className="text-xs font-medium text-muted-foreground">Add New Wallet</Label>
             <Input 
               value={newWallet.wallet_number} 
               onChange={(e) => setNewWallet(p => ({ ...p, wallet_number: e.target.value }))} 
-              placeholder="Wallet Number" 
-              className="h-10 rounded-xl" 
+              placeholder="Enter wallet number" 
+              className="h-11 rounded-xl border-border/50" 
             />
-            <Button onClick={handleAddWallet} disabled={saving === 'wallet-add' || !newWallet.wallet_number} className="w-full h-10 rounded-xl">
+            <Button onClick={handleAddWallet} disabled={saving === 'wallet-add' || !newWallet.wallet_number} className="w-full h-11 rounded-xl gradient-accent text-accent-foreground btn-glow">
               {saving === 'wallet-add' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-2" />Add Wallet</>}
             </Button>
           </div>
         </div>
 
         {/* Section H: Messages */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Send Message</h3>
-          <Textarea value={messageContent} onChange={(e) => setMessageContent(e.target.value)} placeholder="Write message..." className="rounded-xl min-h-[80px]" />
-          <Button onClick={handleSendMessage} disabled={saving === 'message'} className="w-full h-10 rounded-xl">
-            {saving === 'message' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Message'}
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '400ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+              <MessageSquare className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground">Send Message</h3>
+          </div>
+          <Textarea value={messageContent} onChange={(e) => setMessageContent(e.target.value)} placeholder="Write your message to this agent..." className="rounded-xl min-h-[100px] border-border/50 resize-none" />
+          <Button onClick={handleSendMessage} disabled={saving === 'message' || !messageContent} className="w-full h-11 rounded-xl gradient-primary text-primary-foreground btn-glow">
+            {saving === 'message' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><MessageSquare className="w-4 h-4 mr-2" />Send Message</>}
           </Button>
         </div>
 
         {/* Section I: Pay In Requests */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Send Pay In Request</h3>
-          <Input 
-            type="number" 
-            value={payInAmount} 
-            onChange={(e) => setPayInAmount(e.target.value)} 
-            placeholder="Amount" 
-            className="h-10 rounded-xl" 
-          />
-          <Input 
-            value={payInTransactionId} 
-            onChange={(e) => setPayInTransactionId(e.target.value)} 
-            placeholder="Transaction ID (optional)" 
-            className="h-10 rounded-xl" 
-          />
-          <Button onClick={() => handleSendPayRequest('pay_in')} disabled={saving === 'pay_in' || !payInAmount} className="w-full h-10 rounded-xl bg-success hover:bg-success/90">
-            {saving === 'pay_in' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Pay In Request'}
-          </Button>
+        <div className="card-3d rounded-2xl overflow-hidden animate-slide-up" style={{ animationDelay: '450ms' }}>
+          <div className="bg-gradient-to-r from-success/20 via-success/10 to-transparent p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
+                <ArrowDownCircle className="w-5 h-5 text-success" />
+              </div>
+              <h3 className="font-semibold text-foreground">Send Pay In Request</h3>
+            </div>
+          </div>
+          <div className="p-5 bg-card space-y-4">
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Amount</Label>
+              <Input 
+                type="number" 
+                value={payInAmount} 
+                onChange={(e) => setPayInAmount(e.target.value)} 
+                placeholder="Enter amount" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Transaction ID (optional)</Label>
+              <Input 
+                value={payInTransactionId} 
+                onChange={(e) => setPayInTransactionId(e.target.value)} 
+                placeholder="Enter transaction ID" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <Button onClick={() => handleSendPayRequest('pay_in')} disabled={saving === 'pay_in' || !payInAmount} className="w-full h-11 rounded-xl bg-success hover:bg-success/90 btn-glow">
+              {saving === 'pay_in' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ArrowDownCircle className="w-4 h-4 mr-2" />Send Pay In Request</>}
+            </Button>
+          </div>
         </div>
 
         {/* Section J: Pay Out Requests */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Send Pay Out Request</h3>
-          <Input 
-            type="number" 
-            value={payOutAmount} 
-            onChange={(e) => setPayOutAmount(e.target.value)} 
-            placeholder="Amount" 
-            className="h-10 rounded-xl" 
-          />
-          <Input 
-            value={payOutMethodName} 
-            onChange={(e) => setPayOutMethodName(e.target.value)} 
-            placeholder="Method Name (e.g., Bkash, Nagad)" 
-            className="h-10 rounded-xl" 
-          />
-          <Input 
-            value={payOutMethodNumber} 
-            onChange={(e) => setPayOutMethodNumber(e.target.value)} 
-            placeholder="Method Number" 
-            className="h-10 rounded-xl" 
-          />
-          <Button onClick={() => handleSendPayRequest('pay_out')} disabled={saving === 'pay_out' || !payOutAmount} variant="destructive" className="w-full h-10 rounded-xl">
-            {saving === 'pay_out' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Pay Out Request'}
-          </Button>
+        <div className="card-3d rounded-2xl overflow-hidden animate-slide-up" style={{ animationDelay: '500ms' }}>
+          <div className="bg-gradient-to-r from-destructive/20 via-destructive/10 to-transparent p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-destructive/20 flex items-center justify-center">
+                <ArrowUpCircle className="w-5 h-5 text-destructive" />
+              </div>
+              <h3 className="font-semibold text-foreground">Send Pay Out Request</h3>
+            </div>
+          </div>
+          <div className="p-5 bg-card space-y-4">
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Amount</Label>
+              <Input 
+                type="number" 
+                value={payOutAmount} 
+                onChange={(e) => setPayOutAmount(e.target.value)} 
+                placeholder="Enter amount" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Name</Label>
+              <Input 
+                value={payOutMethodName} 
+                onChange={(e) => setPayOutMethodName(e.target.value)} 
+                placeholder="e.g., Bkash, Nagad, Rocket" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Number</Label>
+              <Input 
+                value={payOutMethodNumber} 
+                onChange={(e) => setPayOutMethodNumber(e.target.value)} 
+                placeholder="Enter phone/account number" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <Button onClick={() => handleSendPayRequest('pay_out')} disabled={saving === 'pay_out' || !payOutAmount} variant="destructive" className="w-full h-11 rounded-xl">
+              {saving === 'pay_out' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ArrowUpCircle className="w-4 h-4 mr-2" />Send Pay Out Request</>}
+            </Button>
+          </div>
         </div>
 
         {/* Section K: Deposit Requests */}
-        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Deposit Requests</h3>
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up" style={{ animationDelay: '550ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning/20 to-warning/10 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-warning" />
+            </div>
+            <h3 className="font-semibold text-foreground">Deposit Requests</h3>
+          </div>
           {deposits.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-2">No deposit requests</p>
+            <div className="text-center py-6 rounded-xl bg-muted/20 border border-dashed border-border">
+              <Clock className="w-10 h-10 text-muted-foreground/50 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No deposit requests</p>
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {deposits.map((deposit) => (
-                <div key={deposit.id} className="p-3 rounded-xl bg-muted/30 space-y-2">
-                  <div className="flex justify-between">
+                <div key={deposit.id} className="p-4 rounded-xl bg-muted/20 border border-border/50 space-y-3">
+                  <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-medium">${deposit.amount_usdt} / ৳{deposit.amount_bdt}</p>
-                      <p className="text-xs text-muted-foreground">{deposit.deposit_methods?.name || 'Unknown'}</p>
+                      <p className="text-lg font-bold">${deposit.amount_usdt} <span className="text-muted-foreground font-normal text-sm">/ ৳{deposit.amount_bdt}</span></p>
+                      <p className="text-sm text-muted-foreground">{deposit.deposit_methods?.name || 'Unknown method'}</p>
                     </div>
                     <span className={cn(
-                      "px-2 py-1 rounded-full text-xs font-medium h-fit",
-                      deposit.status === 'approved' ? "bg-success/10 text-success" :
-                      deposit.status === 'rejected' ? "bg-destructive/10 text-destructive" :
-                      "bg-warning/10 text-warning"
+                      "px-3 py-1.5 rounded-full text-xs font-semibold",
+                      deposit.status === 'approved' ? "bg-success/10 text-success border border-success/20" :
+                      deposit.status === 'rejected' ? "bg-destructive/10 text-destructive border border-destructive/20" :
+                      "bg-warning/10 text-warning border border-warning/20"
                     )}>
                       {deposit.status}
                     </span>
                   </div>
                   {deposit.status === 'processing' && (
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleDepositAction(deposit.id, 'approved')} disabled={saving === `deposit-${deposit.id}`} size="sm" className="flex-1 h-8 rounded-lg bg-success hover:bg-success/90">
-                        Approve
+                    <div className="flex gap-3 pt-3 border-t border-border/50">
+                      <Button onClick={() => handleDepositAction(deposit.id, 'approved')} disabled={saving === `deposit-${deposit.id}`} className="flex-1 h-10 rounded-xl bg-success hover:bg-success/90">
+                        <CheckCircle className="w-4 h-4 mr-1" /> Approve
                       </Button>
-                      <Button onClick={() => handleDepositAction(deposit.id, 'rejected')} disabled={saving === `deposit-${deposit.id}`} size="sm" variant="destructive" className="flex-1 h-8 rounded-lg">
-                        Reject
+                      <Button onClick={() => handleDepositAction(deposit.id, 'rejected')} disabled={saving === `deposit-${deposit.id}`} variant="destructive" className="flex-1 h-10 rounded-xl">
+                        <XCircle className="w-4 h-4 mr-1" /> Reject
                       </Button>
                     </div>
                   )}
