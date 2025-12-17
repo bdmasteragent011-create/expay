@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   User, 
@@ -20,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface Wallet {
+interface WalletData {
   id: string;
   wallet_number: string;
   balance: number;
@@ -36,7 +35,7 @@ export default function Account() {
   const { agent, signOut, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [wallets, setWallets] = useState<WalletData[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
@@ -61,7 +60,7 @@ export default function Account() {
       .order('created_at', { ascending: true });
 
     if (data) {
-      setWallets(data as Wallet[]);
+      setWallets(data as WalletData[]);
     }
   };
 
@@ -87,98 +86,142 @@ export default function Account() {
 
   if (authLoading || !agent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-[#6a4cff]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 bg-white relative overflow-hidden">
+      {/* Vignette overlay */}
+      <div className="fixed inset-0 pointer-events-none z-0" style={{
+        background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.04) 100%)'
+      }} />
+      
+      {/* Bokeh blobs */}
+      <div 
+        className="fixed top-[-5%] right-[-10%] w-[350px] h-[350px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#c7b8ff',
+          opacity: 0.12,
+          filter: 'blur(80px)',
+        }}
+      />
+      <div 
+        className="fixed top-[40%] left-[-15%] w-[300px] h-[300px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#8a63ff',
+          opacity: 0.1,
+          filter: 'blur(60px)',
+        }}
+      />
+      <div 
+        className="fixed bottom-[5%] right-[5%] w-[280px] h-[280px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#5ee6c5',
+          opacity: 0.15,
+          filter: 'blur(70px)',
+        }}
+      />
+      <div 
+        className="fixed bottom-[35%] left-[10%] w-[200px] h-[200px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#2fd3b0',
+          opacity: 0.08,
+          filter: 'blur(50px)',
+        }}
+      />
+
       <Header />
       
-      <main className="p-4 space-y-4">
+      <main className="p-4 space-y-4 relative z-10">
         {/* Agent Information */}
-        <div className="card-3d rounded-2xl bg-card p-5 animate-slide-up">
-          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 text-primary" />
+        <div 
+          className="rounded-2xl p-5 animate-slide-up"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 18px 45px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.06)',
+          }}
+        >
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#1a1a2e' }}>
+            <User className="w-5 h-5" style={{ color: '#6a4cff' }} />
             Agent Information
           </h3>
           
           <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Name</p>
-                <p className="font-medium text-foreground">{agent.name}</p>
+            {[
+              { icon: User, label: 'Name', value: agent.name },
+              { icon: Mail, label: 'Email', value: agent.email },
+              { icon: Phone, label: 'Phone', value: agent.phone || 'Not set' },
+              { icon: CreditCard, label: 'Agent ID', value: agent.agent_id },
+              { icon: MapPin, label: 'District', value: agent.district || 'Not set' },
+            ].map((item, index) => (
+              <div 
+                key={index}
+                className="flex items-center gap-3 p-3 rounded-xl"
+                style={{ background: '#f4f5f7' }}
+              >
+                <item.icon className="w-4 h-4" style={{ color: '#9aa0a6' }} />
+                <div>
+                  <p className="text-xs" style={{ color: '#7a7f99' }}>{item.label}</p>
+                  <p className="font-medium" style={{ color: '#1a1a2e' }}>{item.value}</p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <Mail className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Email</p>
-                <p className="font-medium text-foreground">{agent.email}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <Phone className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Phone</p>
-                <p className="font-medium text-foreground">{agent.phone || 'Not set'}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <CreditCard className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Agent ID</p>
-                <p className="font-medium text-foreground">{agent.agent_id}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">District</p>
-                <p className="font-medium text-foreground">{agent.district || 'Not set'}</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
         {/* Wallet Information */}
-        <div className="card-3d rounded-2xl bg-card p-5 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-primary" />
+        <div 
+          className="rounded-2xl p-5 animate-slide-up"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 18px 45px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            animationDelay: '0.1s',
+          }}
+        >
+          <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: '#1a1a2e' }}>
+            <Wallet className="w-5 h-5" style={{ color: '#6a4cff' }} />
             Wallet Information
           </h3>
           
           {wallets.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No wallets added yet</p>
+            <p className="text-sm text-center py-4" style={{ color: '#7a7f99' }}>
+              No wallets added yet
+            </p>
           ) : (
             <div className="space-y-3">
               {wallets.map((wallet, index) => (
                 <div 
                   key={wallet.id}
-                  className={`p-4 rounded-xl border transition-all ${
-                    wallet.is_active 
-                      ? 'bg-success/5 border-success/20' 
-                      : 'bg-muted/50 border-border opacity-60'
-                  }`}
+                  className="p-4 rounded-xl transition-all"
+                  style={{
+                    background: wallet.is_active ? 'rgba(32,211,161,0.08)' : '#f4f5f7',
+                    border: `1px solid ${wallet.is_active ? 'rgba(32,211,161,0.2)' : 'rgba(0,0,0,0.06)'}`,
+                    opacity: wallet.is_active ? 1 : 0.6,
+                  }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-foreground">Wallet {index + 1}</p>
-                    <div className={`flex items-center gap-1 text-xs ${
-                      wallet.is_active ? 'text-success' : 'text-muted-foreground'
-                    }`}>
+                    <p className="text-sm font-medium" style={{ color: '#1a1a2e' }}>
+                      Wallet {index + 1}
+                    </p>
+                    <div 
+                      className="flex items-center gap-1 text-xs"
+                      style={{ color: wallet.is_active ? '#20d3a1' : '#7a7f99' }}
+                    >
                       <Power className="w-3 h-3" />
                       {wallet.is_active ? 'Active' : 'Inactive'}
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-1">Number: {wallet.wallet_number}</p>
-                  <p className="text-lg font-bold text-foreground">৳{wallet.balance.toLocaleString()}</p>
+                  <p className="text-xs mb-1" style={{ color: '#7a7f99' }}>
+                    Number: {wallet.wallet_number}
+                  </p>
+                  <p className="text-lg font-bold" style={{ color: '#1a1a2e' }}>
+                    ৳{wallet.balance.toLocaleString()}
+                  </p>
                 </div>
               ))}
             </div>
@@ -186,47 +229,71 @@ export default function Account() {
         </div>
 
         {/* Deposit Credit Button */}
-        <Button 
+        <button 
           onClick={() => navigate('/deposit')}
-          className="w-full h-14 rounded-2xl gradient-primary text-primary-foreground font-semibold text-lg btn-3d animate-slide-up"
-          style={{ animationDelay: '0.2s' }}
+          className="w-full h-14 rounded-2xl font-semibold text-lg text-white relative overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-slide-up flex items-center justify-center gap-2"
+          style={{
+            background: 'linear-gradient(to right, #5b4bff, #20d3a1)',
+            boxShadow: '0 12px 30px rgba(32,211,161,0.25), 0 12px 30px rgba(91,75,255,0.20)',
+            animationDelay: '0.2s',
+          }}
         >
-          <CreditCard className="w-5 h-5 mr-2" />
+          {/* Glossy highlight */}
+          <div 
+            className="absolute top-0 left-0 right-0 h-[1px]"
+            style={{
+              background: 'linear-gradient(to right, rgba(255,255,255,0.35), rgba(255,255,255,0.15), rgba(255,255,255,0.35))',
+            }}
+          />
+          <CreditCard className="w-5 h-5" />
           Deposit Credit
-        </Button>
+        </button>
 
         {/* Support Buttons */}
         <div className="grid grid-cols-2 gap-3 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-          <Button 
-            variant="outline"
+          <button 
             onClick={() => settings?.telegram_link && window.open(settings.telegram_link, '_blank')}
             disabled={!settings?.telegram_link}
-            className="h-12 rounded-xl border-primary/20 hover:bg-primary/5"
+            className="h-12 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(106,76,255,0.2)',
+              color: '#6a4cff',
+              boxShadow: '0 4px 12px rgba(106,76,255,0.1)',
+            }}
           >
-            <MessageCircle className="w-4 h-4 mr-2 text-primary" />
+            <MessageCircle className="w-4 h-4" />
             Telegram Chat
-          </Button>
+          </button>
 
-          <Button 
-            variant="outline"
+          <button 
             onClick={() => settings?.live_chat_link && window.open(settings.live_chat_link, '_blank')}
             disabled={!settings?.live_chat_link}
-            className="h-12 rounded-xl border-accent/20 hover:bg-accent/5"
+            className="h-12 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(32,211,161,0.2)',
+              color: '#20d3a1',
+              boxShadow: '0 4px 12px rgba(32,211,161,0.1)',
+            }}
           >
-            <Headphones className="w-4 h-4 mr-2 text-accent" />
+            <Headphones className="w-4 h-4" />
             Live Chat
-          </Button>
+          </button>
         </div>
 
         {/* Sign Out */}
-        <Button 
-          variant="ghost"
+        <button 
           onClick={handleSignOut}
-          className="w-full h-12 rounded-xl text-destructive hover:bg-destructive/10"
+          className="w-full h-12 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200 hover:bg-red-50 active:scale-[0.98]"
+          style={{
+            background: 'transparent',
+            color: '#ef4444',
+          }}
         >
-          <LogOut className="w-4 h-4 mr-2" />
+          <LogOut className="w-4 h-4" />
           Sign Out
-        </Button>
+        </button>
       </main>
 
       <BottomNav />
