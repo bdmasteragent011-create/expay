@@ -36,6 +36,32 @@ export default function PayOutRequests() {
     }
   }, [agent]);
 
+  // Realtime subscription for transactions
+  useEffect(() => {
+    if (!agent?.id) return;
+
+    const channel = supabase
+      .channel('payout-transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `agent_id=eq.${agent.id}`,
+        },
+        () => {
+          console.log('Pay-out transactions updated');
+          fetchTransactions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [agent?.id]);
+
   const fetchTransactions = async () => {
     if (!agent) return;
     

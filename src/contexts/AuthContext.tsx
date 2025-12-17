@@ -66,6 +66,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Subscribe to realtime agent updates
+  useEffect(() => {
+    if (!agent?.id) return;
+
+    const channel = supabase
+      .channel('agent-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'agents',
+          filter: `id=eq.${agent.id}`,
+        },
+        (payload) => {
+          console.log('Agent updated in realtime:', payload);
+          setAgent(payload.new as unknown as Agent);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [agent?.id]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {

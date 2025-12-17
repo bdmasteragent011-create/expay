@@ -51,6 +51,32 @@ export default function Account() {
     }
   }, [agent]);
 
+  // Realtime subscription for wallets
+  useEffect(() => {
+    if (!agent?.id) return;
+
+    const walletsChannel = supabase
+      .channel('account-wallets')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wallets',
+          filter: `agent_id=eq.${agent.id}`,
+        },
+        () => {
+          console.log('Wallets updated');
+          fetchWallets();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(walletsChannel);
+    };
+  }, [agent?.id]);
+
   const fetchWallets = async () => {
     if (!agent) return;
     const { data } = await supabase
