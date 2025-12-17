@@ -13,6 +13,7 @@ interface Transaction {
   amount: number;
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
+  transaction_id: string | null;
 }
 
 export default function PayInRequests() {
@@ -168,6 +169,7 @@ export default function PayInRequests() {
                     amount={tx.amount}
                     status={tx.status}
                     createdAt={tx.created_at}
+                    transactionId={tx.transaction_id}
                     onAccept={handleAccept}
                     onReject={handleReject}
                   />
@@ -186,6 +188,7 @@ export default function PayInRequests() {
                     amount={tx.amount}
                     status={tx.status}
                     createdAt={tx.created_at}
+                    transactionId={tx.transaction_id}
                   />
                 ))}
               </div>
