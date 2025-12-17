@@ -5,8 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// This function seeds demo accounts - should only be called once
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -22,103 +20,126 @@ Deno.serve(async (req) => {
 
     const results: string[] = []
 
-    // Create admin demo user
-    const { data: adminAuthData, error: adminAuthError } = await supabase.auth.admin.createUser({
-      email: 'admin@demo.com',
-      password: 'admin123',
-      email_confirm: true
-    })
+    // ===== ADMIN DEMO ACCOUNT =====
+    // Check if admin user exists
+    const { data: existingUsers } = await supabase.auth.admin.listUsers()
+    const existingAdmin = existingUsers?.users?.find(u => u.email === 'admin@demo.com')
+    
+    let adminUserId: string
 
-    if (adminAuthError && !adminAuthError.message.includes('already been registered')) {
-      throw new Error(`Admin auth error: ${adminAuthError.message}`)
-    }
-
-    if (adminAuthData?.user) {
-      // Add to admin_users table
-      const { error: adminInsertError } = await supabase
-        .from('admin_users')
-        .upsert({ 
-          email: 'admin@demo.com', 
-          auth_user_id: adminAuthData.user.id 
-        }, { onConflict: 'email' })
-
-      if (adminInsertError) {
-        results.push(`Admin user created but table insert failed: ${adminInsertError.message}`)
-      } else {
-        results.push('Admin demo account created successfully')
+    if (existingAdmin) {
+      // Update password for existing admin
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        existingAdmin.id,
+        { password: 'admin123', email_confirm: true }
+      )
+      if (updateError) {
+        console.error('Admin password update error:', updateError)
       }
+      adminUserId = existingAdmin.id
+      results.push('Admin password reset to admin123')
     } else {
-      // User already exists, try to get their ID and ensure admin_users entry exists
-      const { data: existingUser } = await supabase.auth.admin.listUsers()
-      const adminUser = existingUser?.users?.find(u => u.email === 'admin@demo.com')
-      
-      if (adminUser) {
-        await supabase
-          .from('admin_users')
-          .upsert({ email: 'admin@demo.com', auth_user_id: adminUser.id }, { onConflict: 'email' })
-        results.push('Admin demo account already exists, ensured admin_users entry')
+      // Create new admin user
+      const { data: adminAuthData, error: adminAuthError } = await supabase.auth.admin.createUser({
+        email: 'admin@demo.com',
+        password: 'admin123',
+        email_confirm: true
+      })
+
+      if (adminAuthError) {
+        throw new Error(`Admin auth error: ${adminAuthError.message}`)
       }
+      adminUserId = adminAuthData.user.id
+      results.push('Admin demo account created')
     }
 
-    // Create agent demo user
-    const { data: agentAuthData, error: agentAuthError } = await supabase.auth.admin.createUser({
-      email: 'agent@demo.com',
-      password: 'demo123',
-      email_confirm: true
-    })
+    // Ensure admin_users entry exists
+    await supabase
+      .from('admin_users')
+      .upsert({ 
+        email: 'admin@demo.com', 
+        auth_user_id: adminUserId 
+      }, { onConflict: 'email' })
+    results.push('Admin entry in admin_users table ensured')
 
-    if (agentAuthError && !agentAuthError.message.includes('already been registered')) {
-      throw new Error(`Agent auth error: ${agentAuthError.message}`)
-    }
+    // ===== AGENT DEMO ACCOUNT =====
+    const existingAgent = existingUsers?.users?.find(u => u.email === 'agent@demo.com')
+    
+    let agentUserId: string
 
-    if (agentAuthData?.user) {
-      // Add to agents table
-      const { error: agentInsertError } = await supabase
-        .from('agents')
-        .upsert({ 
-          email: 'agent@demo.com',
-          name: 'Demo Agent',
-          agent_id: 'AGENT001',
-          activation_code: 'DEMO001',
-          auth_user_id: agentAuthData.user.id,
-          phone: '+1234567890',
-          district: 'Demo District',
-          available_credits: 1000,
-          max_credit: 5000
-        }, { onConflict: 'email' })
-
-      if (agentInsertError) {
-        results.push(`Agent user created but table insert failed: ${agentInsertError.message}`)
-      } else {
-        results.push('Agent demo account created successfully')
+    if (existingAgent) {
+      // Update password for existing agent
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        existingAgent.id,
+        { password: 'demo123', email_confirm: true }
+      )
+      if (updateError) {
+        console.error('Agent password update error:', updateError)
       }
+      agentUserId = existingAgent.id
+      results.push('Agent password reset to demo123')
     } else {
-      // User already exists
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const agentUser = existingUsers?.users?.find(u => u.email === 'agent@demo.com')
-      
-      if (agentUser) {
-        await supabase
-          .from('agents')
-          .upsert({ 
-            email: 'agent@demo.com',
-            name: 'Demo Agent',
-            agent_id: 'AGENT001',
-            activation_code: 'DEMO001',
-            auth_user_id: agentUser.id,
-            phone: '+1234567890',
-            district: 'Demo District'
-          }, { onConflict: 'email' })
-        results.push('Agent demo account already exists, ensured agents entry')
+      // Create new agent user
+      const { data: agentAuthData, error: agentAuthError } = await supabase.auth.admin.createUser({
+        email: 'agent@demo.com',
+        password: 'demo123',
+        email_confirm: true
+      })
+
+      if (agentAuthError) {
+        throw new Error(`Agent auth error: ${agentAuthError.message}`)
       }
+      agentUserId = agentAuthData.user.id
+      results.push('Agent demo account created')
     }
+
+    // Ensure agents entry exists
+    await supabase
+      .from('agents')
+      .upsert({ 
+        email: 'agent@demo.com',
+        name: 'Demo Agent',
+        agent_id: 'AGENT001',
+        activation_code: 'DEMO001',
+        auth_user_id: agentUserId,
+        phone: '+1234567890',
+        district: 'Demo District',
+        available_credits: 1000,
+        total_pay_in: 0,
+        total_pay_out: 0,
+        commission_balance: 0,
+        max_credit: 5000,
+        is_banned: false
+      }, { onConflict: 'email' })
+    results.push('Agent entry in agents table ensured')
+
+    // ===== ENSURE SETTINGS EXIST =====
+    const { data: settingsData } = await supabase.from('settings').select('id').limit(1)
+    if (!settingsData || settingsData.length === 0) {
+      await supabase.from('settings').insert({
+        site_title: 'Agent Panel',
+        dollar_rate: 125,
+        maintenance_mode: false
+      })
+      results.push('Default settings created')
+    }
+
+    console.log('Seed results:', results)
 
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify({ 
+        success: true, 
+        results,
+        credentials: {
+          admin: { email: 'admin@demo.com', password: 'admin123' },
+          agent: { email: 'agent@demo.com', password: 'demo123', code: 'DEMO001' }
+        }
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error: unknown) {
+    console.error('Seed error:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
       JSON.stringify({ success: false, error: message }),

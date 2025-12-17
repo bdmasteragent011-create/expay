@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Menu, X, LayoutDashboard, Users, Settings, LogOut, Shield, Sparkles } from 'lucide-react';
@@ -8,7 +8,7 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+const AdminLayout = forwardRef<HTMLDivElement, AdminLayoutProps>(({ children }, ref) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div ref={ref} className="min-h-screen relative overflow-hidden">
       {/* Premium Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-primary/5 -z-10" />
       
@@ -174,4 +174,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </main>
     </div>
   );
-}
+});
+
+AdminLayout.displayName = 'AdminLayout';
+
+export default AdminLayout;
