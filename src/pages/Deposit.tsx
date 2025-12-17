@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -170,89 +169,179 @@ export default function Deposit() {
 
   if (authLoading || !agent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-[#6a4cff]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-6">
+    <div className="min-h-screen pb-6 bg-white relative overflow-hidden">
+      {/* Vignette overlay */}
+      <div className="fixed inset-0 pointer-events-none z-0" style={{
+        background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.04) 100%)'
+      }} />
+      
+      {/* Bokeh blobs */}
+      <div 
+        className="fixed top-[-10%] right-[-5%] w-[350px] h-[350px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#c7b8ff',
+          opacity: 0.12,
+          filter: 'blur(80px)',
+        }}
+      />
+      <div 
+        className="fixed top-[50%] left-[-15%] w-[300px] h-[300px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#8a63ff',
+          opacity: 0.1,
+          filter: 'blur(60px)',
+        }}
+      />
+      <div 
+        className="fixed bottom-[20%] right-[10%] w-[250px] h-[250px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#5ee6c5',
+          opacity: 0.15,
+          filter: 'blur(70px)',
+        }}
+      />
+      <div 
+        className="fixed bottom-[-5%] left-[20%] w-[200px] h-[200px] rounded-full pointer-events-none z-0"
+        style={{
+          background: '#2fd3b0',
+          opacity: 0.08,
+          filter: 'blur(50px)',
+        }}
+      />
+
       <Header />
       
-      <main className="p-4 space-y-4">
+      <main className="p-4 space-y-4 relative z-10">
         {/* Back Button */}
         <button 
           onClick={() => navigate('/account')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 transition-colors"
+          style={{ color: '#7a7f99' }}
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm font-medium">Back</span>
         </button>
 
         {/* Available Credits */}
-        <div className="card-3d rounded-2xl bg-card p-4 animate-slide-up">
+        <div 
+          className="rounded-2xl p-4 animate-slide-up"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 18px 45px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.06)',
+          }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-primary-foreground" />
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, #5b4bff, #20d3a1)',
+                boxShadow: '0 8px 20px rgba(91,75,255,0.25)',
+              }}
+            >
+              <div 
+                className="absolute top-0 left-0 right-0 h-[1px]"
+                style={{
+                  background: 'linear-gradient(to right, rgba(255,255,255,0.4), rgba(255,255,255,0.1), rgba(255,255,255,0.4))',
+                }}
+              />
+              <Wallet className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Available Credits</p>
-              <p className="text-xl font-bold text-foreground">৳{agent.available_credits.toLocaleString()}</p>
+              <p className="text-xs" style={{ color: '#7a7f99' }}>Available Credits</p>
+              <p className="text-xl font-bold" style={{ color: '#1a1a2e' }}>
+                ৳{agent.available_credits.toLocaleString()}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Enter Amount */}
-        <div className="card-3d rounded-2xl bg-card p-5 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <h3 className="font-semibold text-foreground mb-4">Enter Amount</h3>
+        <div 
+          className="rounded-2xl p-5 animate-slide-up"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 18px 45px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            animationDelay: '0.1s',
+          }}
+        >
+          <h3 className="font-semibold mb-4" style={{ color: '#1a1a2e' }}>Enter Amount</h3>
           
           <div className="space-y-4">
             <div>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#9aa0a6' }} />
                 <Input
                   type="number"
                   placeholder="USDT Amount"
                   value={usdt}
                   onChange={(e) => handleUsdtChange(e.target.value)}
-                  className="pl-11 h-12 rounded-xl text-lg font-semibold"
+                  className="pl-11 h-12 text-lg font-semibold"
+                  style={{
+                    background: '#f4f5f7',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    color: '#1a1a2e',
+                  }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">1$ = {dollarRate} TK</p>
+              <p className="text-xs mt-1" style={{ color: '#7a7f99' }}>1$ = {dollarRate} TK</p>
             </div>
 
             <div>
               <div className="relative">
-                <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#9aa0a6' }} />
                 <Input
                   type="number"
                   placeholder="BDT Amount"
                   value={bdt}
                   onChange={(e) => handleBdtChange(e.target.value)}
-                  className="pl-11 h-12 rounded-xl text-lg font-semibold"
+                  className="pl-11 h-12 text-lg font-semibold"
+                  style={{
+                    background: '#f4f5f7',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    color: '#1a1a2e',
+                  }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">{dollarRate} TK = 1$</p>
+              <p className="text-xs mt-1" style={{ color: '#7a7f99' }}>{dollarRate} TK = 1$</p>
             </div>
           </div>
         </div>
 
         {/* Select Method */}
-        <div className="card-3d rounded-2xl bg-card p-5 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <h3 className="font-semibold text-foreground mb-4">Select Method</h3>
+        <div 
+          className="rounded-2xl p-5 animate-slide-up"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 18px 45px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            animationDelay: '0.2s',
+          }}
+        >
+          <h3 className="font-semibold mb-4" style={{ color: '#1a1a2e' }}>Select Method</h3>
           
           <div className="grid grid-cols-3 gap-2">
             {methods.map((method) => (
               <button
                 key={method.id}
                 onClick={() => setSelectedMethod(method)}
-                className={cn(
-                  "p-3 rounded-xl border text-sm font-medium transition-all",
-                  selectedMethod?.id === method.id
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-muted/30 text-muted-foreground hover:border-primary/50"
-                )}
+                className="p-3 text-sm font-medium transition-all"
+                style={{
+                  borderRadius: '12px',
+                  background: selectedMethod?.id === method.id ? 'rgba(106,76,255,0.1)' : '#f4f5f7',
+                  border: `1px solid ${selectedMethod?.id === method.id ? 'rgba(106,76,255,0.3)' : 'rgba(0,0,0,0.06)'}`,
+                  color: selectedMethod?.id === method.id ? '#6a4cff' : '#7a7f99',
+                }}
               >
                 {method.name}
               </button>
@@ -262,66 +351,114 @@ export default function Deposit() {
 
         {/* Instructions */}
         {selectedMethod && (
-          <div className="card-3d rounded-2xl bg-card p-5 animate-scale-in">
-            <h3 className="font-semibold text-foreground mb-3">Instructions</h3>
+          <div 
+            className="rounded-2xl p-5 animate-scale-in"
+            style={{
+              background: '#ffffff',
+              boxShadow: '0 18px 45px rgba(0,0,0,0.08)',
+              border: '1px solid rgba(0,0,0,0.06)',
+            }}
+          >
+            <h3 className="font-semibold mb-3" style={{ color: '#1a1a2e' }}>Instructions</h3>
             
             {selectedMethod.number && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20 mb-3">
-                <p className="flex-1 font-mono text-sm text-foreground">{selectedMethod.number}</p>
+              <div 
+                className="flex items-center gap-2 p-3 rounded-xl mb-3"
+                style={{
+                  background: 'rgba(106,76,255,0.08)',
+                  border: '1px solid rgba(106,76,255,0.2)',
+                }}
+              >
+                <p className="flex-1 font-mono text-sm" style={{ color: '#1a1a2e' }}>
+                  {selectedMethod.number}
+                </p>
                 <button 
                   onClick={copyNumber}
-                  className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
+                  className="p-2 rounded-lg transition-colors hover:bg-white/50"
                 >
                   {copied ? (
-                    <CheckCircle className="w-5 h-5 text-success" />
+                    <CheckCircle className="w-5 h-5" style={{ color: '#20d3a1' }} />
                   ) : (
-                    <Copy className="w-5 h-5 text-primary" />
+                    <Copy className="w-5 h-5" style={{ color: '#6a4cff' }} />
                   )}
                 </button>
               </div>
             )}
             
             {selectedMethod.instructions && (
-              <p className="text-sm text-muted-foreground">{selectedMethod.instructions}</p>
+              <p className="text-sm" style={{ color: '#7a7f99' }}>{selectedMethod.instructions}</p>
             )}
           </div>
         )}
 
         {/* Deposit Button */}
-        <Button 
+        <button 
           onClick={handleDeposit}
           disabled={isSubmitting || !selectedMethod || !usdt}
-          className="w-full h-14 rounded-2xl gradient-primary text-primary-foreground font-semibold text-lg btn-3d"
+          className="w-full h-14 rounded-2xl font-semibold text-lg text-white relative overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(to right, #5b4bff, #20d3a1)',
+            boxShadow: '0 12px 30px rgba(32,211,161,0.25), 0 12px 30px rgba(91,75,255,0.20)',
+          }}
         >
+          <div 
+            className="absolute top-0 left-0 right-0 h-[1px]"
+            style={{
+              background: 'linear-gradient(to right, rgba(255,255,255,0.35), rgba(255,255,255,0.15), rgba(255,255,255,0.35))',
+            }}
+          />
           {isSubmitting ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             'Deposit Now'
           )}
-        </Button>
+        </button>
 
         {/* Deposit History */}
-        <div className="card-3d rounded-2xl bg-card p-5 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-          <h3 className="font-semibold text-foreground mb-4">Deposit History</h3>
+        <div 
+          className="rounded-2xl p-5 animate-slide-up"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 18px 45px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.06)',
+            animationDelay: '0.3s',
+          }}
+        >
+          <h3 className="font-semibold mb-4" style={{ color: '#1a1a2e' }}>Deposit History</h3>
           
           {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No deposits yet</p>
+            <p className="text-sm text-center py-4" style={{ color: '#7a7f99' }}>No deposits yet</p>
           ) : (
             <div className="space-y-3">
               {history.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                <div 
+                  key={item.id} 
+                  className="flex items-center justify-between p-3 rounded-xl"
+                  style={{ background: '#f4f5f7' }}
+                >
                   <div>
-                    <p className="font-medium text-foreground">৳{item.amount_bdt.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">{item.deposit_methods?.name || 'Unknown'}</p>
+                    <p className="font-medium" style={{ color: '#1a1a2e' }}>
+                      ৳{item.amount_bdt.toLocaleString()}
+                    </p>
+                    <p className="text-xs" style={{ color: '#7a7f99' }}>
+                      {item.deposit_methods?.name || 'Unknown'}
+                    </p>
                   </div>
-                  <span className={cn(
-                    "flex items-center gap-1 text-xs px-2 py-1 rounded-full",
-                    item.status === 'approved' 
-                      ? "bg-success/10 text-success" 
-                      : item.status === 'rejected'
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-warning/10 text-warning"
-                  )}>
+                  <span 
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
+                    style={{
+                      background: item.status === 'approved' 
+                        ? 'rgba(32,211,161,0.1)' 
+                        : item.status === 'rejected'
+                        ? 'rgba(239,68,68,0.1)'
+                        : 'rgba(245,158,11,0.1)',
+                      color: item.status === 'approved' 
+                        ? '#20d3a1' 
+                        : item.status === 'rejected'
+                        ? '#ef4444'
+                        : '#f59e0b',
+                    }}
+                  >
                     {item.status === 'processing' && <Clock className="w-3 h-3" />}
                     {item.status === 'approved' && <CheckCircle className="w-3 h-3" />}
                     {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
