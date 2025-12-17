@@ -42,6 +42,52 @@ export default function Dashboard() {
     }
   }, [agent]);
 
+  // Realtime subscriptions
+  useEffect(() => {
+    if (!agent?.id) return;
+
+    // Listen for message changes
+    const messagesChannel = supabase
+      .channel('dashboard-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `agent_id=eq.${agent.id}`,
+        },
+        () => {
+          console.log('Messages updated');
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
+    // Listen for transaction changes
+    const transactionsChannel = supabase
+      .channel('dashboard-transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `agent_id=eq.${agent.id}`,
+        },
+        () => {
+          console.log('Transactions updated');
+          fetchPendingTransactions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(transactionsChannel);
+    };
+  }, [agent?.id]);
+
   const fetchMessages = async () => {
     if (!agent) return;
     const { data } = await supabase
