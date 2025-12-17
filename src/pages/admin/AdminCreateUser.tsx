@@ -41,79 +41,58 @@ export default function AdminCreateUser() {
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast({ title: 'Error', description: 'Password must be at least 6 characters', variant: 'destructive' });
+      return;
+    }
+
     setIsLoading(true);
 
-    // Check if email is unique
-    const { data: existingEmail } = await supabase
-      .from('agents')
-      .select('id')
-      .eq('email', formData.email)
-      .maybeSingle();
+    try {
+      // Get current session for authorization
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({ title: 'Error', description: 'Not authenticated', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
 
-    if (existingEmail) {
-      toast({ title: 'Error', description: 'Email already exists', variant: 'destructive' });
+      // Call edge function to create user
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          agent_id: formData.agent_id,
+          district: formData.district || null,
+          activation_code: formData.activation_code,
+          password: formData.password,
+        },
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        toast({ title: 'Error', description: error.message || 'Failed to create user', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.error) {
+        toast({ title: 'Error', description: data.error, variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
+
+      toast({ title: 'Success', description: 'User created successfully' });
+      sessionStorage.setItem('highlightedAgent', data.agent.id);
+      navigate('/admin/users');
+    } catch (err: any) {
+      console.error('Error creating user:', err);
+      toast({ title: 'Error', description: err.message || 'Failed to create user', variant: 'destructive' });
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // Check if activation code is unique
-    const { data: existingCode } = await supabase
-      .from('agents')
-      .select('id')
-      .eq('activation_code', formData.activation_code)
-      .maybeSingle();
-
-    if (existingCode) {
-      toast({ title: 'Error', description: 'Activation code already exists', variant: 'destructive' });
-      setIsLoading(false);
-      return;
-    }
-
-    // Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-
-    if (authError || !authData.user) {
-      toast({ title: 'Error', description: authError?.message || 'Failed to create user', variant: 'destructive' });
-      setIsLoading(false);
-      return;
-    }
-
-    // Create agent record
-    const { data: agentData, error: agentError } = await supabase
-      .from('agents')
-      .insert({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone || null,
-        agent_id: formData.agent_id,
-        district: formData.district || null,
-        activation_code: formData.activation_code,
-        auth_user_id: authData.user.id,
-        available_credits: 0,
-        total_pay_in: 0,
-        total_pay_out: 0,
-        commission_balance: 0,
-        max_credit: 0,
-        is_banned: false,
-      })
-      .select()
-      .single();
-
-    if (agentError) {
-      toast({ title: 'Error', description: 'Failed to create agent record', variant: 'destructive' });
-      setIsLoading(false);
-      return;
-    }
-
-    toast({ title: 'Success', description: 'User created successfully' });
-    sessionStorage.setItem('highlightedAgent', agentData.id);
-    navigate('/admin/users');
   };
 
   if (authLoading) {
