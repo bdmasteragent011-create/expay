@@ -10,8 +10,12 @@ import Account from "./pages/Account";
 import Deposit from "./pages/Deposit";
 import PayInRequests from "./pages/PayInRequests";
 import PayOutRequests from "./pages/PayOutRequests";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLoginZrx from "./pages/admin/AdminLoginZrx";
+import AdminDashboardNew from "./pages/admin/AdminDashboardNew";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminCreateUser from "./pages/admin/AdminCreateUser";
+import AdminEditUser from "./pages/admin/AdminEditUser";
+import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +28,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            {/* User Routes */}
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -31,8 +36,16 @@ const App = () => (
             <Route path="/deposit" element={<Deposit />} />
             <Route path="/pay-in-requests" element={<PayInRequests />} />
             <Route path="/pay-out-requests" element={<PayOutRequests />} />
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            
+            {/* Admin Routes - Only accessible via /admin/login/zrx */}
+            <Route path="/admin/login/zrx" element={<AdminLoginZrx />} />
+            <Route path="/admin/dashboard" element={<AdminDashboardNew />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/users/create" element={<AdminCreateUser />} />
+            <Route path="/admin/users/:id" element={<AdminEditUser />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            
+            {/* Catch all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
