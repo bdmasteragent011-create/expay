@@ -123,28 +123,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string, activationCode: string) => {
-    // First verify activation code exists
-    const { data: agentCheck } = await supabase
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedCode = activationCode.trim();
+
+    // First verify activation code exists - use ilike for case-insensitive match
+    const { data: agentCheck, error: agentError } = await supabase
       .from('agents')
-      .select('id, email, is_banned')
-      .eq('activation_code', activationCode)
-      .eq('email', email)
+      .select('id, email, is_banned, auth_user_id')
+      .ilike('email', normalizedEmail)
+      .eq('activation_code', normalizedCode)
       .maybeSingle();
 
+    if (agentError) {
+      console.error('Agent lookup error:', agentError);
+      return { error: 'Error checking credentials' };
+    }
+
     if (!agentCheck) {
-      return { error: 'Invalid credentials or activation code' };
+      // Try to find by email only to give better error message
+      const { data: emailCheck } = await supabase
+        .from('agents')
+        .select('id, activation_code')
+        .ilike('email', normalizedEmail)
+        .maybeSingle();
+
+      if (emailCheck) {
+        return { error: 'Invalid activation code for this account' };
+      }
+      return { error: 'No account found with this email' };
+    }
+
+    if (!agentCheck.auth_user_id) {
+      return { error: 'Account not properly set up. Contact admin.' };
     }
 
     if (agentCheck.is_banned) {
       return { error: 'Your account has been banned. Contact admin.' };
     }
 
+    // Use the stored email from the agent record for auth
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: agentCheck.email,
       password,
     });
 
     if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        return { error: 'Incorrect password' };
+      }
       return { error: error.message };
     }
 
