@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, Plus, Trash2, Settings2, CreditCard } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, Settings2, CreditCard, Shield, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -303,6 +303,21 @@ export default function AdminSettings() {
                 onCheckedChange={(checked) => setGeneralForm(p => ({ ...p, maintenance_mode: checked }))}
               />
             </div>
+
+            {/* Manage Admins Link */}
+            <button
+              onClick={() => navigate('/admin/manage-admins')}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-primary" />
+                <div className="text-left">
+                  <p className="font-medium">Manage Admin Users</p>
+                  <p className="text-xs text-muted-foreground">Add or remove administrators</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </button>
 
             <Button
               onClick={handleSaveGeneral}

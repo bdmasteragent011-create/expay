@@ -16,6 +16,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCreateUser from "./pages/admin/AdminCreateUser";
 import AdminEditUser from "./pages/admin/AdminEditUser";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminManageAdmins from "./pages/admin/AdminManageAdmins";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/admin/users/create" element={<AdminCreateUser />} />
             <Route path="/admin/users/:id" element={<AdminEditUser />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/manage-admins" element={<AdminManageAdmins />} />
             
             {/* Catch all */}
             <Route path="*" element={<NotFound />} />
