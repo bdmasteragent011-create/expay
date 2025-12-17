@@ -59,6 +59,27 @@ export default function AdminLogin() {
           <Button type="submit" disabled={isLoading} className="w-full h-12 rounded-xl gradient-accent text-accent-foreground font-semibold btn-3d">
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
           </Button>
+
+          {/* Demo Credentials */}
+          <div 
+            className="mt-6 p-4"
+            style={{
+              background: 'linear-gradient(135deg, rgba(106,76,255,0.08), rgba(34,211,166,0.08))',
+              borderRadius: '12px',
+              border: '1px solid rgba(106,76,255,0.15)',
+            }}
+          >
+            <p 
+              className="text-xs font-semibold mb-2 text-center"
+              style={{ color: '#6a4cff' }}
+            >
+              Demo Credentials
+            </p>
+            <div className="space-y-1 text-xs" style={{ color: '#7a7f99' }}>
+              <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Email:</span> admin@demo.com</p>
+              <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Password:</span> admin123</p>
+            </div>
+          </div>
         </form>
       </div>
     </div>
