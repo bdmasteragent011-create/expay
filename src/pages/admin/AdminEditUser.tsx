@@ -65,8 +65,11 @@ export default function AdminEditUser() {
   const [maxCredit, setMaxCredit] = useState('');
   const [messageContent, setMessageContent] = useState('');
   const [payInAmount, setPayInAmount] = useState('');
+  const [payInTransactionId, setPayInTransactionId] = useState('');
   const [payOutAmount, setPayOutAmount] = useState('');
-  const [newWallet, setNewWallet] = useState({ wallet_number: '', balance: '0' });
+  const [payOutMethodName, setPayOutMethodName] = useState('');
+  const [payOutMethodNumber, setPayOutMethodNumber] = useState('');
+  const [newWallet, setNewWallet] = useState({ wallet_number: '', balance: '0', name: '' });
   
   const [saving, setSaving] = useState<string | null>(null);
 
@@ -296,7 +299,7 @@ export default function AdminEditUser() {
       toast({ title: 'Error', description: 'Failed to add wallet', variant: 'destructive' });
     } else {
       toast({ title: 'Success', description: 'Wallet added' });
-      setNewWallet({ wallet_number: '', balance: '0' });
+      setNewWallet({ wallet_number: '', balance: '0', name: '' });
       fetchAgent();
     }
     setSaving(null);
@@ -349,19 +352,35 @@ export default function AdminEditUser() {
     if (!amount) return;
     setSaving(type);
     
-    const { error } = await supabase.from('transactions').insert({
+    const insertData: any = {
       agent_id: id,
       type,
       amount: Number(amount),
       status: 'pending',
-    });
+    };
+
+    if (type === 'pay_in' && payInTransactionId) {
+      insertData.transaction_id = payInTransactionId;
+    }
+    if (type === 'pay_out') {
+      if (payOutMethodName) insertData.method_name = payOutMethodName;
+      if (payOutMethodNumber) insertData.method_number = payOutMethodNumber;
+    }
+    
+    const { error } = await supabase.from('transactions').insert(insertData);
 
     if (error) {
       toast({ title: 'Error', description: 'Failed to send request', variant: 'destructive' });
     } else {
       toast({ title: 'Success', description: `${type === 'pay_in' ? 'Pay In' : 'Pay Out'} request sent` });
-      if (type === 'pay_in') setPayInAmount('');
-      else setPayOutAmount('');
+      if (type === 'pay_in') {
+        setPayInAmount('');
+        setPayInTransactionId('');
+      } else {
+        setPayOutAmount('');
+        setPayOutMethodName('');
+        setPayOutMethodNumber('');
+      }
     }
     setSaving(null);
   };
@@ -544,25 +563,39 @@ export default function AdminEditUser() {
           ) : (
             <div className="space-y-2">
               {wallets.map((wallet) => (
-                <div key={wallet.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-                  <div>
-                    <p className="text-sm font-medium">{wallet.wallet_number}</p>
-                    <p className="text-xs text-muted-foreground">৳{wallet.balance}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={wallet.is_active} onCheckedChange={() => handleToggleWallet(wallet)} />
+                <div key={wallet.id} className="p-3 rounded-xl bg-muted/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{wallet.wallet_number}</p>
+                      <p className="text-xs text-muted-foreground">Balance: ৳{wallet.balance}</p>
+                    </div>
                     <Button size="icon" variant="ghost" onClick={() => handleDeleteWallet(wallet.id)} className="h-8 w-8 text-destructive">
                       <Trash2 className="w-4 h-4" />
                     </Button>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                    <span className="text-xs text-muted-foreground">Wallet Status</span>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-xs font-medium", wallet.is_active ? "text-success" : "text-destructive")}>
+                        {wallet.is_active ? 'ON' : 'OFF'}
+                      </span>
+                      <Switch checked={wallet.is_active} onCheckedChange={() => handleToggleWallet(wallet)} />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
-          <div className="grid grid-cols-3 gap-2">
-            <Input value={newWallet.wallet_number} onChange={(e) => setNewWallet(p => ({ ...p, wallet_number: e.target.value }))} placeholder="Number" className="h-10 rounded-xl col-span-2" />
-            <Button onClick={handleAddWallet} disabled={saving === 'wallet-add'} className="h-10 rounded-xl">
-              {saving === 'wallet-add' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+          <div className="space-y-2 pt-2 border-t border-border/50">
+            <p className="text-xs text-muted-foreground">Add New Wallet</p>
+            <Input 
+              value={newWallet.wallet_number} 
+              onChange={(e) => setNewWallet(p => ({ ...p, wallet_number: e.target.value }))} 
+              placeholder="Wallet Number" 
+              className="h-10 rounded-xl" 
+            />
+            <Button onClick={handleAddWallet} disabled={saving === 'wallet-add' || !newWallet.wallet_number} className="w-full h-10 rounded-xl">
+              {saving === 'wallet-add' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-2" />Add Wallet</>}
             </Button>
           </div>
         </div>
@@ -576,21 +609,52 @@ export default function AdminEditUser() {
           </Button>
         </div>
 
-        {/* Section I & J: Pay Requests */}
+        {/* Section I: Pay In Requests */}
         <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
-          <h3 className="font-semibold text-primary">Pay Requests</h3>
-          <div className="flex gap-2">
-            <Input type="number" value={payInAmount} onChange={(e) => setPayInAmount(e.target.value)} placeholder="Pay In Amount" className="h-10 rounded-xl flex-1" />
-            <Button onClick={() => handleSendPayRequest('pay_in')} disabled={saving === 'pay_in'} className="h-10 rounded-xl bg-success hover:bg-success/90">
-              {saving === 'pay_in' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Pay In'}
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Input type="number" value={payOutAmount} onChange={(e) => setPayOutAmount(e.target.value)} placeholder="Pay Out Amount" className="h-10 rounded-xl flex-1" />
-            <Button onClick={() => handleSendPayRequest('pay_out')} disabled={saving === 'pay_out'} variant="destructive" className="h-10 rounded-xl">
-              {saving === 'pay_out' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Pay Out'}
-            </Button>
-          </div>
+          <h3 className="font-semibold text-primary">Send Pay In Request</h3>
+          <Input 
+            type="number" 
+            value={payInAmount} 
+            onChange={(e) => setPayInAmount(e.target.value)} 
+            placeholder="Amount" 
+            className="h-10 rounded-xl" 
+          />
+          <Input 
+            value={payInTransactionId} 
+            onChange={(e) => setPayInTransactionId(e.target.value)} 
+            placeholder="Transaction ID (optional)" 
+            className="h-10 rounded-xl" 
+          />
+          <Button onClick={() => handleSendPayRequest('pay_in')} disabled={saving === 'pay_in' || !payInAmount} className="w-full h-10 rounded-xl bg-success hover:bg-success/90">
+            {saving === 'pay_in' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Pay In Request'}
+          </Button>
+        </div>
+
+        {/* Section J: Pay Out Requests */}
+        <div className="card-3d rounded-2xl bg-card p-4 space-y-3">
+          <h3 className="font-semibold text-primary">Send Pay Out Request</h3>
+          <Input 
+            type="number" 
+            value={payOutAmount} 
+            onChange={(e) => setPayOutAmount(e.target.value)} 
+            placeholder="Amount" 
+            className="h-10 rounded-xl" 
+          />
+          <Input 
+            value={payOutMethodName} 
+            onChange={(e) => setPayOutMethodName(e.target.value)} 
+            placeholder="Method Name (e.g., Bkash, Nagad)" 
+            className="h-10 rounded-xl" 
+          />
+          <Input 
+            value={payOutMethodNumber} 
+            onChange={(e) => setPayOutMethodNumber(e.target.value)} 
+            placeholder="Method Number" 
+            className="h-10 rounded-xl" 
+          />
+          <Button onClick={() => handleSendPayRequest('pay_out')} disabled={saving === 'pay_out' || !payOutAmount} variant="destructive" className="w-full h-10 rounded-xl">
+            {saving === 'pay_out' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Pay Out Request'}
+          </Button>
         </div>
 
         {/* Section K: Deposit Requests */}

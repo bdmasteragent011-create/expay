@@ -232,7 +232,10 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          method_name: string | null
+          method_number: string | null
           status: Database["public"]["Enums"]["transaction_status"] | null
+          transaction_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         Insert: {
@@ -240,7 +243,10 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
+          method_name?: string | null
+          method_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"] | null
+          transaction_id?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
         }
         Update: {
@@ -248,7 +254,10 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
+          method_name?: string | null
+          method_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"] | null
+          transaction_id?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
         }
         Relationships: [

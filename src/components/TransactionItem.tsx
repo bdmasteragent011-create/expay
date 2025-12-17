@@ -9,6 +9,9 @@ interface TransactionItemProps {
   amount: number;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
+  transactionId?: string | null;
+  methodName?: string | null;
+  methodNumber?: string | null;
   onAccept?: (id: string) => void;
   onReject?: (id: string) => void;
 }
@@ -18,7 +21,10 @@ export function TransactionItem({
   type, 
   amount, 
   status, 
-  createdAt, 
+  createdAt,
+  transactionId,
+  methodName,
+  methodNumber,
   onAccept, 
   onReject 
 }: TransactionItemProps) {
@@ -64,6 +70,32 @@ export function TransactionItem({
           )}
         </div>
       </div>
+
+      {/* Transaction ID for Pay In */}
+      {transactionId && (
+        <div className="mb-3 p-2 rounded-lg bg-muted/30">
+          <p className="text-xs text-muted-foreground">Transaction ID</p>
+          <p className="text-sm font-medium text-foreground">{transactionId}</p>
+        </div>
+      )}
+
+      {/* Method Name and Number for Pay Out */}
+      {(methodName || methodNumber) && (
+        <div className="mb-3 p-2 rounded-lg bg-muted/30 space-y-1">
+          {methodName && (
+            <div>
+              <p className="text-xs text-muted-foreground">Method</p>
+              <p className="text-sm font-medium text-foreground">{methodName}</p>
+            </div>
+          )}
+          {methodNumber && (
+            <div>
+              <p className="text-xs text-muted-foreground">Number</p>
+              <p className="text-sm font-medium text-foreground">{methodNumber}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {isPending && onAccept && onReject && (
         <div className="flex gap-2 pt-3 border-t border-border">
