@@ -330,9 +330,31 @@ export default function Login() {
             </button>
           </form>
 
+          {/* Demo Credentials */}
+          <div 
+            className="mt-6 p-4"
+            style={{
+              background: 'linear-gradient(135deg, rgba(106,76,255,0.08), rgba(34,211,166,0.08))',
+              borderRadius: '12px',
+              border: '1px solid rgba(106,76,255,0.15)',
+            }}
+          >
+            <p 
+              className="text-xs font-semibold mb-2 text-center"
+              style={{ color: '#6a4cff' }}
+            >
+              Demo Credentials
+            </p>
+            <div className="space-y-1 text-xs" style={{ color: '#7a7f99' }}>
+              <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Email:</span> agent@demo.com</p>
+              <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Password:</span> demo123</p>
+              <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Code:</span> DEMO001</p>
+            </div>
+          </div>
+
           {/* Footer Text */}
           <p 
-            className="text-center text-sm mt-6"
+            className="text-center text-sm mt-4"
             style={{ color: '#7a7f99' }}
           >
             Contact admin for account creation
