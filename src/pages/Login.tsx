@@ -339,12 +339,29 @@ export default function Login() {
               border: '1px solid rgba(106,76,255,0.15)',
             }}
           >
-            <p 
-              className="text-xs font-semibold mb-2 text-center"
-              style={{ color: '#6a4cff' }}
-            >
-              Demo Credentials
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p 
+                className="text-xs font-semibold"
+                style={{ color: '#6a4cff' }}
+              >
+                Demo Credentials
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('agent@demo.com');
+                  setPassword('demo123');
+                  setActivationCode('DEMO001');
+                }}
+                className="text-xs font-medium px-3 py-1 rounded-full transition-all hover:scale-105 active:scale-95"
+                style={{
+                  background: 'linear-gradient(to right, #5b4bff, #20d3a1)',
+                  color: '#ffffff',
+                }}
+              >
+                Use Demo
+              </button>
+            </div>
             <div className="space-y-1 text-xs" style={{ color: '#7a7f99' }}>
               <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Email:</span> agent@demo.com</p>
               <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Password:</span> demo123</p>
