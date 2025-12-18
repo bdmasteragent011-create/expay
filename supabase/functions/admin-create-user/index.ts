@@ -26,27 +26,35 @@ serve(async (req) => {
       });
     }
 
-    // Extract JWT token from Authorization header
+    // Extract JWT token from Authorization header and decode it
     const token = authHeader.replace('Bearer ', '');
     
-    // Create service client to verify user
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
-    
-    // Verify caller using the JWT token
-    const { data: { user: callerUser }, error: callerError } = await serviceClient.auth.getUser(token);
-    if (callerError || !callerUser) {
-      console.log('Failed to get caller user:', callerError);
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    // Decode JWT to get user ID (payload is base64 encoded)
+    let userId: string;
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const payload = JSON.parse(atob(payloadBase64));
+      userId = payload.sub;
+      if (!userId) {
+        throw new Error('No user ID in token');
+      }
+      console.log('Decoded user ID from token:', userId);
+    } catch (decodeError) {
+      console.log('Failed to decode token:', decodeError);
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    
+    // Create service client
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if caller is admin (reuse serviceClient from above)
+    // Check if caller is admin using decoded user ID
     const { data: adminCheck } = await serviceClient
       .from('admin_users')
       .select('id')
-      .eq('auth_user_id', callerUser.id)
+      .eq('auth_user_id', userId)
       .maybeSingle();
 
     if (!adminCheck) {
