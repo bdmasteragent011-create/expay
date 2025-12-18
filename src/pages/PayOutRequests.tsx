@@ -82,44 +82,14 @@ export default function PayOutRequests() {
     const transaction = transactions.find(t => t.id === id);
     if (!transaction || !agent) return;
 
-    // Check if agent has enough balance
-    if (agent.available_credits < transaction.amount) {
-      toast({
-        title: 'Insufficient Balance',
-        description: 'You do not have enough credits for this payout',
-        variant: 'destructive',
-      });
-      return;
-    }
+    const { data, error } = await supabase.functions.invoke('accept-transaction', {
+      body: { transactionId: id, action: 'accept' }
+    });
 
-    // Update transaction status
-    const { error: txError } = await supabase
-      .from('transactions')
-      .update({ status: 'accepted' })
-      .eq('id', id);
-
-    if (txError) {
+    if (error || data?.error) {
       toast({
         title: 'Error',
-        description: 'Failed to accept transaction',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Update agent balance
-    const { error: agentError } = await supabase
-      .from('agents')
-      .update({ 
-        available_credits: agent.available_credits - transaction.amount,
-        total_pay_out: agent.total_pay_out + transaction.amount
-      })
-      .eq('id', agent.id);
-
-    if (agentError) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update balance',
+        description: data?.error || 'Failed to accept transaction',
         variant: 'destructive',
       });
       return;
@@ -127,7 +97,7 @@ export default function PayOutRequests() {
 
     toast({
       title: 'Success!',
-      description: `৳${transaction.amount.toLocaleString()} deducted from your balance`,
+      description: data?.message || `৳${transaction.amount.toLocaleString()} deducted from your balance`,
     });
 
     await refreshAgent();
@@ -135,15 +105,14 @@ export default function PayOutRequests() {
   };
 
   const handleReject = async (id: string) => {
-    const { error } = await supabase
-      .from('transactions')
-      .update({ status: 'rejected' })
-      .eq('id', id);
+    const { data, error } = await supabase.functions.invoke('accept-transaction', {
+      body: { transactionId: id, action: 'reject' }
+    });
 
-    if (error) {
+    if (error || data?.error) {
       toast({
         title: 'Error',
-        description: 'Failed to reject transaction',
+        description: data?.error || 'Failed to reject transaction',
         variant: 'destructive',
       });
       return;
