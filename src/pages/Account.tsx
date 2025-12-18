@@ -15,11 +15,11 @@ import {
   Headphones,
   LogOut,
   Loader2,
-  Power,
   Eye,
   EyeOff
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
 
 interface WalletData {
   id: string;
@@ -112,6 +112,27 @@ export default function Account() {
       description: 'You have been logged out successfully',
     });
     navigate('/login');
+  };
+
+  const handleToggleWallet = async (walletId: string, currentStatus: boolean) => {
+    const { error } = await supabase
+      .from('wallets')
+      .update({ is_active: !currentStatus })
+      .eq('id', walletId);
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update wallet status',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Success',
+        description: `Wallet ${!currentStatus ? 'activated' : 'deactivated'}`,
+      });
+      fetchWallets();
+    }
   };
 
   if (authLoading || !agent) {
@@ -238,12 +259,15 @@ export default function Account() {
                     <p className="text-sm font-medium" style={{ color: '#1a1a2e' }}>
                       {wallet.wallet_name || `Wallet ${index + 1}`}
                     </p>
-                    <div 
-                      className="flex items-center gap-1 text-xs"
-                      style={{ color: wallet.is_active ? '#20d3a1' : '#7a7f99' }}
-                    >
-                      <Power className="w-3 h-3" />
-                      {wallet.is_active ? 'Active' : 'Inactive'}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs" style={{ color: wallet.is_active ? '#20d3a1' : '#7a7f99' }}>
+                        {wallet.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      <Switch
+                        checked={wallet.is_active}
+                        onCheckedChange={() => handleToggleWallet(wallet.id, wallet.is_active)}
+                        className="data-[state=checked]:bg-[#20d3a1]"
+                      />
                     </div>
                   </div>
                   <div className="flex items-center justify-between mb-1">
