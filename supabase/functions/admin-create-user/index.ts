@@ -15,7 +15,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
     // Get the authorization header to verify the caller is an admin
     const authHeader = req.headers.get('Authorization');
@@ -27,12 +26,14 @@ serve(async (req) => {
       });
     }
 
-    // Verify caller is admin using anon key client
-    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user: callerUser }, error: callerError } = await anonClient.auth.getUser();
+    // Extract JWT token from Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Create service client to verify user
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Verify caller using the JWT token
+    const { data: { user: callerUser }, error: callerError } = await serviceClient.auth.getUser(token);
     if (callerError || !callerUser) {
       console.log('Failed to get caller user:', callerError);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -41,8 +42,7 @@ serve(async (req) => {
       });
     }
 
-    // Check if caller is admin
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    // Check if caller is admin (reuse serviceClient from above)
     const { data: adminCheck } = await serviceClient
       .from('admin_users')
       .select('id')
