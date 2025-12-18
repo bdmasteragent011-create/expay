@@ -1,4 +1,4 @@
-import { useEffect, useState, forwardRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,7 +50,7 @@ interface DepositRequest {
   deposit_methods?: { name: string } | null;
 }
 
-const AdminEditUser = forwardRef<HTMLDivElement>(function AdminEditUser(_, ref) {
+export default function AdminEditUser() {
   const { id } = useParams<{ id: string }>();
   const { isAdmin, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -426,7 +426,7 @@ const AdminEditUser = forwardRef<HTMLDivElement>(function AdminEditUser(_, ref) 
 
   if (!agent) {
     return (
-      <AdminLayout ref={ref}>
+      <AdminLayout>
         <div className="text-center py-10">
           <p className="text-muted-foreground">User not found</p>
           <Button onClick={() => navigate('/admin/users')} className="mt-4">
@@ -438,7 +438,7 @@ const AdminEditUser = forwardRef<HTMLDivElement>(function AdminEditUser(_, ref) 
   }
 
   return (
-    <AdminLayout ref={ref}>
+    <AdminLayout>
       <div className="space-y-5">
         {/* Premium Header */}
         <div className="glass-card rounded-2xl p-4 animate-slide-up">
@@ -842,6 +842,4 @@ const AdminEditUser = forwardRef<HTMLDivElement>(function AdminEditUser(_, ref) 
       </div>
     </AdminLayout>
   );
-});
-
-export default AdminEditUser;
+}
