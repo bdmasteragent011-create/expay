@@ -83,6 +83,8 @@ export default function AdminEditUser() {
   const [messageContent, setMessageContent] = useState('');
   const [payInAmount, setPayInAmount] = useState('');
   const [payInTransactionId, setPayInTransactionId] = useState('');
+  const [payInMethodName, setPayInMethodName] = useState('');
+  const [payInMethodNumber, setPayInMethodNumber] = useState('');
   const [payOutAmount, setPayOutAmount] = useState('');
   const [payOutMethodName, setPayOutMethodName] = useState('');
   const [payOutMethodNumber, setPayOutMethodNumber] = useState('');
@@ -436,8 +438,10 @@ export default function AdminEditUser() {
       status: 'pending',
     };
 
-    if (type === 'pay_in' && payInTransactionId) {
-      insertData.transaction_id = payInTransactionId;
+    if (type === 'pay_in') {
+      if (payInTransactionId) insertData.transaction_id = payInTransactionId;
+      if (payInMethodName) insertData.method_name = payInMethodName;
+      if (payInMethodNumber) insertData.method_number = payInMethodNumber;
     }
     if (type === 'pay_out') {
       if (payOutMethodName) insertData.method_name = payOutMethodName;
@@ -453,6 +457,8 @@ export default function AdminEditUser() {
       if (type === 'pay_in') {
         setPayInAmount('');
         setPayInTransactionId('');
+        setPayInMethodName('');
+        setPayInMethodNumber('');
       } else {
         setPayOutAmount('');
         setPayOutMethodName('');
@@ -894,6 +900,24 @@ export default function AdminEditUser() {
                 value={payInTransactionId} 
                 onChange={(e) => setPayInTransactionId(e.target.value)} 
                 placeholder="Enter transaction ID" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Name (optional)</Label>
+              <Input 
+                value={payInMethodName} 
+                onChange={(e) => setPayInMethodName(e.target.value)} 
+                placeholder="e.g., Bkash, Nagad, Rocket" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Number (optional)</Label>
+              <Input 
+                value={payInMethodNumber} 
+                onChange={(e) => setPayInMethodNumber(e.target.value)} 
+                placeholder="Enter phone/account number" 
                 className="h-11 rounded-xl border-border/50" 
               />
             </div>
