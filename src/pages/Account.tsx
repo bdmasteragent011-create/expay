@@ -32,6 +32,8 @@ interface WalletData {
 interface Settings {
   telegram_link: string | null;
   live_chat_link: string | null;
+  telegram_icon_url: string | null;
+  live_chat_icon_url: string | null;
 }
 
 export default function Account() {
@@ -97,11 +99,11 @@ export default function Account() {
   const fetchSettings = async () => {
     const { data } = await supabase
       .from('settings')
-      .select('telegram_link, live_chat_link')
+      .select('telegram_link, live_chat_link, telegram_icon_url, live_chat_icon_url')
       .single();
 
     if (data) {
-      setSettings(data);
+      setSettings(data as Settings);
     }
   };
 
@@ -329,7 +331,11 @@ export default function Account() {
               boxShadow: '0 4px 12px rgba(106,76,255,0.1)',
             }}
           >
-            <MessageCircle className="w-4 h-4" />
+            {settings?.telegram_icon_url ? (
+              <img src={settings.telegram_icon_url} alt="Telegram" className="w-5 h-5 rounded object-cover" />
+            ) : (
+              <MessageCircle className="w-4 h-4" />
+            )}
             Telegram Chat
           </button>
 
@@ -344,7 +350,11 @@ export default function Account() {
               boxShadow: '0 4px 12px rgba(32,211,161,0.1)',
             }}
           >
-            <Headphones className="w-4 h-4" />
+            {settings?.live_chat_icon_url ? (
+              <img src={settings.live_chat_icon_url} alt="Live Chat" className="w-5 h-5 rounded object-cover" />
+            ) : (
+              <Headphones className="w-4 h-4" />
+            )}
             Live Chat
           </button>
         </div>
