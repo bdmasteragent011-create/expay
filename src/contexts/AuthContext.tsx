@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Subscribe to realtime agent updates and auto-logout on ban
+  // Subscribe to realtime agent updates and auto-logout on ban or delete
   useEffect(() => {
     if (!agent?.id) return;
 
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         async (payload) => {
           console.log('Agent updated in realtime:', payload);
-          const updatedAgent = payload.new as unknown as Agent;
+          const updatedAgent = payload.new as unknown as Agent & { is_deleted?: boolean };
           
           // If user gets banned while logged in, sign them out immediately
           if (updatedAgent.is_banned && !agent.is_banned) {
@@ -92,7 +92,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
           
-          setAgent(updatedAgent);
+          // If user gets deleted while logged in, sign them out immediately
+          if (updatedAgent.is_deleted) {
+            await supabase.auth.signOut();
+            setAgent(null);
+            setIsAdmin(false);
+            return;
+          }
+          
+          setAgent(updatedAgent as unknown as Agent);
         }
       )
       .subscribe();
@@ -160,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 2) Load agent profile and validate activation code AFTER login
     const { data: agentRow, error: agentRowError } = await supabase
       .from('agents')
-      .select('activation_code, is_banned')
+      .select('activation_code, is_banned, is_deleted')
       .eq('auth_user_id', userId)
       .maybeSingle();
 
@@ -169,6 +177,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: 'Account not properly set up. Contact admin.' };
     }
 
+    // Check if account is deleted
+    if (agentRow.is_deleted) {
+      await supabase.auth.signOut();
+      return { error: 'Your account has been deleted. Contact admin.' };
+    }
+
+    // Check if account is banned
     if (agentRow.is_banned) {
       await supabase.auth.signOut();
       return { error: 'Your account has been banned. Contact admin.' };

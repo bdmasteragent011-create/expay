@@ -47,6 +47,7 @@ export type Database = {
           email: string
           id: string
           is_banned: boolean | null
+          is_deleted: boolean | null
           max_credit: number | null
           name: string
           phone: string | null
@@ -65,6 +66,7 @@ export type Database = {
           email: string
           id?: string
           is_banned?: boolean | null
+          is_deleted?: boolean | null
           max_credit?: number | null
           name: string
           phone?: string | null
@@ -83,6 +85,7 @@ export type Database = {
           email?: string
           id?: string
           is_banned?: boolean | null
+          is_deleted?: boolean | null
           max_credit?: number | null
           name?: string
           phone?: string | null
