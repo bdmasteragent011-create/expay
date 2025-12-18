@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { TransactionItem } from '@/components/TransactionItem';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Loader2, Inbox, History, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Loader2, Inbox, History, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 
@@ -27,6 +27,7 @@ export default function PayOutRequests() {
   const [isLoading, setIsLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !agent) {
@@ -136,6 +137,40 @@ export default function PayOutRequests() {
     setProcessingId(null);
   };
 
+  const handleClearHistory = async () => {
+    if (!agent) return;
+    
+    setIsClearing(true);
+    const historyIds = transactions
+      .filter(t => t.status !== 'pending')
+      .map(t => t.id);
+    
+    if (historyIds.length === 0) {
+      setIsClearing(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .in('id', historyIds);
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to clear history',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Cleared',
+        description: 'History has been cleared',
+      });
+      fetchTransactions();
+    }
+    setIsClearing(false);
+  };
+
   if (authLoading || !agent) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -197,9 +232,27 @@ export default function PayOutRequests() {
         {/* History Section */}
         {historyTransactions.length > 0 && (
           <div className="space-y-3 pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <History className="w-5 h-5" />
-              <h3 className="font-semibold">History</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <History className="w-5 h-5" />
+                <h3 className="font-semibold">History</h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearHistory}
+                disabled={isClearing}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                {isClearing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Clear
+                  </>
+                )}
+              </Button>
             </div>
             
             <div className="space-y-3">
