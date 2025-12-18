@@ -913,7 +913,7 @@ export default function AdminEditUser() {
               />
             </div>
             <div>
-              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Number (optional)</Label>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Number (optional)</Label>
               <Input 
                 value={payInMethodNumber} 
                 onChange={(e) => setPayInMethodNumber(e.target.value)} 
