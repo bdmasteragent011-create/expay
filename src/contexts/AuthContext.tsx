@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Subscribe to realtime agent updates
+  // Subscribe to realtime agent updates and auto-logout on ban
   useEffect(() => {
     if (!agent?.id) return;
 
@@ -80,9 +80,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           table: 'agents',
           filter: `id=eq.${agent.id}`,
         },
-        (payload) => {
+        async (payload) => {
           console.log('Agent updated in realtime:', payload);
-          setAgent(payload.new as unknown as Agent);
+          const updatedAgent = payload.new as unknown as Agent;
+          
+          // If user gets banned while logged in, sign them out immediately
+          if (updatedAgent.is_banned && !agent.is_banned) {
+            await supabase.auth.signOut();
+            setAgent(null);
+            setIsAdmin(false);
+            return;
+          }
+          
+          setAgent(updatedAgent);
         }
       )
       .subscribe();
@@ -90,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [agent?.id]);
+  }, [agent?.id, agent?.is_banned]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
