@@ -128,6 +128,7 @@ export type Database = {
           id: string
           method_id: string | null
           status: Database["public"]["Enums"]["deposit_status"] | null
+          transaction_id: string | null
         }
         Insert: {
           agent_id: string
@@ -137,6 +138,7 @@ export type Database = {
           id?: string
           method_id?: string | null
           status?: Database["public"]["Enums"]["deposit_status"] | null
+          transaction_id?: string | null
         }
         Update: {
           agent_id?: string
@@ -146,6 +148,7 @@ export type Database = {
           id?: string
           method_id?: string | null
           status?: Database["public"]["Enums"]["deposit_status"] | null
+          transaction_id?: string | null
         }
         Relationships: [
           {
