@@ -249,27 +249,34 @@ export default function AdminEditUser() {
     setSaving('credit-inc');
     const newCredits = (agent.available_credits || 0) + Number(creditAmount);
     
-    const { error } = await supabase
+    const { error: agentError } = await supabase
       .from('agents')
       .update({ available_credits: newCredits })
       .eq('id', id);
 
-    if (!error) {
-      await supabase.from('transactions').insert({
-        agent_id: id,
-        type: 'pay_in',
-        amount: Number(creditAmount),
-        status: 'accepted',
-      });
+    if (agentError) {
+      toast({ title: 'Error', description: 'Failed to increase credits', variant: 'destructive' });
+      setSaving(null);
+      return;
     }
 
-    if (error) {
-      toast({ title: 'Error', description: 'Failed to increase credits', variant: 'destructive' });
+    // Create transaction record for history
+    const { error: txError } = await supabase.from('transactions').insert({
+      agent_id: id,
+      type: 'pay_in' as const,
+      amount: Number(creditAmount),
+      status: 'accepted' as const,
+    });
+
+    if (txError) {
+      console.error('Failed to create transaction record:', txError);
+      toast({ title: 'Warning', description: 'Credits added but history record failed', variant: 'destructive' });
     } else {
       toast({ title: 'Success', description: `Added ৳${creditAmount} credits` });
-      setCreditAmount('');
-      fetchAgent();
     }
+    
+    setCreditAmount('');
+    fetchAgent();
     setSaving(null);
   };
 
@@ -278,27 +285,34 @@ export default function AdminEditUser() {
     setSaving('credit-dec');
     const newCredits = Math.max(0, (agent.available_credits || 0) - Number(creditAmount));
     
-    const { error } = await supabase
+    const { error: agentError } = await supabase
       .from('agents')
       .update({ available_credits: newCredits })
       .eq('id', id);
 
-    if (!error) {
-      await supabase.from('transactions').insert({
-        agent_id: id,
-        type: 'pay_out',
-        amount: Number(creditAmount),
-        status: 'accepted',
-      });
+    if (agentError) {
+      toast({ title: 'Error', description: 'Failed to decrease credits', variant: 'destructive' });
+      setSaving(null);
+      return;
     }
 
-    if (error) {
-      toast({ title: 'Error', description: 'Failed to decrease credits', variant: 'destructive' });
+    // Create transaction record for history
+    const { error: txError } = await supabase.from('transactions').insert({
+      agent_id: id,
+      type: 'pay_out' as const,
+      amount: Number(creditAmount),
+      status: 'accepted' as const,
+    });
+
+    if (txError) {
+      console.error('Failed to create transaction record:', txError);
+      toast({ title: 'Warning', description: 'Credits removed but history record failed', variant: 'destructive' });
     } else {
       toast({ title: 'Success', description: `Removed ৳${creditAmount} credits` });
-      setCreditAmount('');
-      fetchAgent();
     }
+    
+    setCreditAmount('');
+    fetchAgent();
     setSaving(null);
   };
 
