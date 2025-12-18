@@ -37,6 +37,7 @@ interface Agent {
 interface Wallet {
   id: string;
   wallet_number: string;
+  wallet_name: string | null;
   balance: number;
   is_active: boolean;
 }
@@ -47,6 +48,7 @@ interface DepositRequest {
   amount_bdt: number;
   status: string;
   created_at: string;
+  transaction_id: string | null;
   deposit_methods?: { name: string } | null;
 }
 
@@ -75,6 +77,7 @@ export default function AdminEditUser() {
   const [payOutMethodName, setPayOutMethodName] = useState('');
   const [payOutMethodNumber, setPayOutMethodNumber] = useState('');
   const [newWallet, setNewWallet] = useState({ wallet_number: '', balance: '0', name: '' });
+  const [walletBalances, setWalletBalances] = useState<{[key: string]: string}>({});
   
   const [saving, setSaving] = useState<string | null>(null);
 
@@ -124,7 +127,7 @@ export default function AdminEditUser() {
     // Fetch deposit requests
     const { data: depositData } = await supabase
       .from('deposit_requests')
-      .select('*, deposit_methods(name)')
+      .select('*, deposit_methods(name), transaction_id')
       .eq('agent_id', id)
       .order('created_at', { ascending: false });
 
@@ -291,11 +294,12 @@ export default function AdminEditUser() {
   };
 
   const handleAddWallet = async () => {
-    if (!newWallet.wallet_number) return;
+    if (!newWallet.wallet_number || !newWallet.name) return;
     setSaving('wallet-add');
     const { error } = await supabase.from('wallets').insert({
       agent_id: id,
       wallet_number: newWallet.wallet_number,
+      wallet_name: newWallet.name,
       balance: Number(newWallet.balance) || 0,
       is_active: true,
     });
@@ -332,6 +336,22 @@ export default function AdminEditUser() {
       toast({ title: 'Success', description: 'Wallet deleted' });
       fetchAgent();
     }
+  };
+
+  const handleUpdateWalletBalance = async (walletId: string, newBalance: number) => {
+    setSaving(`wallet-balance-${walletId}`);
+    const { error } = await supabase
+      .from('wallets')
+      .update({ balance: newBalance })
+      .eq('id', walletId);
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to update balance', variant: 'destructive' });
+    } else {
+      toast({ title: 'Success', description: 'Wallet balance updated' });
+      fetchAgent();
+    }
+    setSaving(null);
   };
 
   const handleSendMessage = async () => {
@@ -665,15 +685,38 @@ export default function AdminEditUser() {
                         #{index + 1}
                       </div>
                       <div>
-                        <p className="font-medium">{wallet.wallet_number}</p>
-                        <p className="text-sm text-muted-foreground">Balance: ৳{wallet.balance.toLocaleString()}</p>
+                        <p className="font-medium">{wallet.wallet_name || 'Unnamed Wallet'}</p>
+                        <p className="text-sm text-muted-foreground">{wallet.wallet_number}</p>
+                        <p className="text-sm font-semibold text-success">Balance: ৳{wallet.balance.toLocaleString()}</p>
                       </div>
                     </div>
                     <Button size="icon" variant="ghost" onClick={() => handleDeleteWallet(wallet.id)} className="h-9 w-9 text-destructive hover:bg-destructive/10 rounded-lg">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                  {/* Balance Update */}
+                  <div className="flex gap-2 pt-3 border-t border-border/50">
+                    <Input
+                      type="number"
+                      placeholder="New balance"
+                      value={walletBalances[wallet.id] || ''}
+                      onChange={(e) => setWalletBalances(prev => ({ ...prev, [wallet.id]: e.target.value }))}
+                      className="h-10 rounded-lg border-border/50 flex-1"
+                    />
+                    <Button 
+                      onClick={() => {
+                        const newBalance = parseFloat(walletBalances[wallet.id] || '0');
+                        handleUpdateWalletBalance(wallet.id, newBalance);
+                        setWalletBalances(prev => ({ ...prev, [wallet.id]: '' }));
+                      }}
+                      disabled={saving === `wallet-balance-${wallet.id}` || !walletBalances[wallet.id]}
+                      size="sm"
+                      className="h-10 rounded-lg px-4"
+                    >
+                      {saving === `wallet-balance-${wallet.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update'}
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-border/50">
                     <div className="flex items-center gap-2">
                       <span className={cn("status-dot", wallet.is_active ? "status-dot-success" : "status-dot-destructive")} />
                       <span className="text-sm">{wallet.is_active ? 'Active' : 'Inactive'}</span>
@@ -687,12 +730,25 @@ export default function AdminEditUser() {
           <div className="space-y-3 pt-4 border-t border-border/50">
             <Label className="text-xs font-medium text-muted-foreground">Add New Wallet</Label>
             <Input 
+              value={newWallet.name} 
+              onChange={(e) => setNewWallet(p => ({ ...p, name: e.target.value }))} 
+              placeholder="Enter wallet name (e.g., Bkash, Nagad)" 
+              className="h-11 rounded-xl border-border/50" 
+            />
+            <Input 
               value={newWallet.wallet_number} 
               onChange={(e) => setNewWallet(p => ({ ...p, wallet_number: e.target.value }))} 
               placeholder="Enter wallet number" 
               className="h-11 rounded-xl border-border/50" 
             />
-            <Button onClick={handleAddWallet} disabled={saving === 'wallet-add' || !newWallet.wallet_number} className="w-full h-11 rounded-xl gradient-accent text-accent-foreground btn-glow">
+            <Input 
+              type="number"
+              value={newWallet.balance} 
+              onChange={(e) => setNewWallet(p => ({ ...p, balance: e.target.value }))} 
+              placeholder="Initial balance" 
+              className="h-11 rounded-xl border-border/50" 
+            />
+            <Button onClick={handleAddWallet} disabled={saving === 'wallet-add' || !newWallet.wallet_number || !newWallet.name} className="w-full h-11 rounded-xl gradient-accent text-accent-foreground btn-glow">
               {saving === 'wallet-add' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-2" />Add Wallet</>}
             </Button>
           </div>
@@ -814,6 +870,11 @@ export default function AdminEditUser() {
                     <div>
                       <p className="text-lg font-bold">${deposit.amount_usdt} <span className="text-muted-foreground font-normal text-sm">/ ৳{deposit.amount_bdt}</span></p>
                       <p className="text-sm text-muted-foreground">{deposit.deposit_methods?.name || 'Unknown method'}</p>
+                      {deposit.transaction_id && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          TxID: <span className="font-mono">{deposit.transaction_id}</span>
+                        </p>
+                      )}
                     </div>
                     <span className={cn(
                       "px-3 py-1.5 rounded-full text-xs font-semibold",

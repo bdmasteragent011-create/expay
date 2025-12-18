@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 interface WalletData {
   id: string;
   wallet_number: string;
+  wallet_name: string | null;
   balance: number;
   is_active: boolean;
 }
@@ -232,7 +233,7 @@ export default function Account() {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium" style={{ color: '#1a1a2e' }}>
-                      Wallet {index + 1}
+                      {wallet.wallet_name || `Wallet ${index + 1}`}
                     </p>
                     <div 
                       className="flex items-center gap-1 text-xs"
