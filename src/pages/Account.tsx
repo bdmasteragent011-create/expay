@@ -15,7 +15,9 @@ import {
   Headphones,
   LogOut,
   Loader2,
-  Power
+  Power,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,6 +40,7 @@ export default function Account() {
   const { toast } = useToast();
   const [wallets, setWallets] = useState<WalletData[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [visibleNumbers, setVisibleNumbers] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     if (!authLoading && !agent) {
@@ -243,9 +246,22 @@ export default function Account() {
                       {wallet.is_active ? 'Active' : 'Inactive'}
                     </div>
                   </div>
-                  <p className="text-xs mb-1" style={{ color: '#7a7f99' }}>
-                    Number: {wallet.wallet_number}
-                  </p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs" style={{ color: '#7a7f99' }}>
+                      Number: {visibleNumbers[wallet.id] ? wallet.wallet_number : '••••••••••'}
+                    </p>
+                    <button
+                      onClick={() => setVisibleNumbers(prev => ({ ...prev, [wallet.id]: !prev[wallet.id] }))}
+                      className="p-1.5 rounded-lg transition-all hover:bg-black/5 active:scale-95"
+                      style={{ color: '#7a7f99' }}
+                    >
+                      {visibleNumbers[wallet.id] ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                   <p className="text-lg font-bold" style={{ color: '#1a1a2e' }}>
                     ৳{wallet.balance.toLocaleString()}
                   </p>
