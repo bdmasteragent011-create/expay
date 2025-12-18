@@ -27,7 +27,7 @@ export default function AdminCreateUser() {
 
   const generateActivationCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const part1 = 'SSMN';
+    const part1 = 'SMCT';
     const part2 = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
     const part3 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
     setFormData((prev) => ({ ...prev, activation_code: `${part1}-${part2}-${part3}` }));
@@ -176,7 +176,7 @@ export default function AdminCreateUser() {
               <Input
                 value={formData.activation_code}
                 onChange={(e) => setFormData((p) => ({ ...p, activation_code: e.target.value }))}
-                placeholder="SSMN-XXXXXX-XXXX"
+                placeholder="SMCT-XXXXXX-XXXX"
                 className="h-11 rounded-xl flex-1"
               />
               <Button
