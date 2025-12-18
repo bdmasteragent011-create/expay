@@ -86,6 +86,7 @@ export default function AdminEditUser() {
   const [payInMethodName, setPayInMethodName] = useState('');
   const [payInMethodNumber, setPayInMethodNumber] = useState('');
   const [payOutAmount, setPayOutAmount] = useState('');
+  const [payOutTransactionId, setPayOutTransactionId] = useState('');
   const [payOutMethodName, setPayOutMethodName] = useState('');
   const [payOutMethodNumber, setPayOutMethodNumber] = useState('');
   const [newWallet, setNewWallet] = useState({ wallet_number: '', balance: '0', name: '' });
@@ -444,6 +445,7 @@ export default function AdminEditUser() {
       if (payInMethodNumber) insertData.method_number = payInMethodNumber;
     }
     if (type === 'pay_out') {
+      if (payOutTransactionId) insertData.transaction_id = payOutTransactionId;
       if (payOutMethodName) insertData.method_name = payOutMethodName;
       if (payOutMethodNumber) insertData.method_number = payOutMethodNumber;
     }
@@ -461,6 +463,7 @@ export default function AdminEditUser() {
         setPayInMethodNumber('');
       } else {
         setPayOutAmount('');
+        setPayOutTransactionId('');
         setPayOutMethodName('');
         setPayOutMethodNumber('');
       }
@@ -949,7 +952,16 @@ export default function AdminEditUser() {
               />
             </div>
             <div>
-              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Name</Label>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Transaction ID (optional)</Label>
+              <Input 
+                value={payOutTransactionId} 
+                onChange={(e) => setPayOutTransactionId(e.target.value)} 
+                placeholder="Enter transaction ID" 
+                className="h-11 rounded-xl border-border/50" 
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Name (optional)</Label>
               <Input 
                 value={payOutMethodName} 
                 onChange={(e) => setPayOutMethodName(e.target.value)} 
@@ -958,7 +970,7 @@ export default function AdminEditUser() {
               />
             </div>
             <div>
-              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Method Number</Label>
+              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Number (optional)</Label>
               <Input 
                 value={payOutMethodNumber} 
                 onChange={(e) => setPayOutMethodNumber(e.target.value)} 

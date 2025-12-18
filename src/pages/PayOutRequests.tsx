@@ -13,6 +13,7 @@ interface Transaction {
   amount: number;
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
+  transaction_id: string | null;
   method_name: string | null;
   method_number: string | null;
 }
@@ -175,6 +176,7 @@ export default function PayOutRequests() {
                     amount={tx.amount}
                     status={tx.status}
                     createdAt={tx.created_at}
+                    transactionId={tx.transaction_id}
                     methodName={tx.method_name}
                     methodNumber={tx.method_number}
                     onAccept={handleAccept}
@@ -195,6 +197,7 @@ export default function PayOutRequests() {
                     amount={tx.amount}
                     status={tx.status}
                     createdAt={tx.created_at}
+                    transactionId={tx.transaction_id}
                     methodName={tx.method_name}
                     methodNumber={tx.method_number}
                   />
