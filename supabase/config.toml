@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.admin-manage-admins]
 verify_jwt = false
+
+[functions.accept-transaction]
+verify_jwt = true
