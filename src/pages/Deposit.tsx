@@ -12,7 +12,8 @@ import {
   Copy,
   CheckCircle,
   Clock,
-  Loader2
+  Loader2,
+  Hash
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -41,6 +42,7 @@ export default function Deposit() {
   
   const [usdt, setUsdt] = useState('');
   const [bdt, setBdt] = useState('');
+  const [transactionId, setTransactionId] = useState('');
   const [dollarRate, setDollarRate] = useState(125);
   const [methods, setMethods] = useState<DepositMethod[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<DepositMethod | null>(null);
@@ -127,10 +129,10 @@ export default function Deposit() {
   };
 
   const handleDeposit = async () => {
-    if (!agent || !selectedMethod || !usdt || !bdt) {
+    if (!agent || !selectedMethod || !usdt || !bdt || !transactionId.trim()) {
       toast({
         title: 'Error',
-        description: 'Please fill all fields and select a method',
+        description: 'Please fill all fields including Transaction ID and select a method',
         variant: 'destructive',
       });
       return;
@@ -145,6 +147,7 @@ export default function Deposit() {
         method_id: selectedMethod.id,
         amount_usdt: parseFloat(usdt),
         amount_bdt: parseFloat(bdt),
+        transaction_id: transactionId.trim(),
       });
 
     if (error) {
@@ -160,6 +163,7 @@ export default function Deposit() {
       });
       setUsdt('');
       setBdt('');
+      setTransactionId('');
       setSelectedMethod(null);
       fetchHistory();
     }
@@ -388,13 +392,39 @@ export default function Deposit() {
             {selectedMethod.instructions && (
               <p className="text-sm" style={{ color: '#7a7f99' }}>{selectedMethod.instructions}</p>
             )}
+
+            {/* Transaction ID Input */}
+            <div className="mt-4">
+              <label className="text-sm font-medium mb-2 block" style={{ color: '#1a1a2e' }}>
+                Transaction ID
+              </label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#9aa0a6' }} />
+                <Input
+                  type="text"
+                  placeholder="Enter your transaction ID"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  className="pl-11 h-12 text-base font-medium"
+                  style={{
+                    background: '#f4f5f7',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    color: '#1a1a2e',
+                  }}
+                />
+              </div>
+              <p className="text-xs mt-1" style={{ color: '#7a7f99' }}>
+                Enter the transaction ID after sending payment
+              </p>
+            </div>
           </div>
         )}
 
         {/* Deposit Button */}
         <button 
           onClick={handleDeposit}
-          disabled={isSubmitting || !selectedMethod || !usdt}
+          disabled={isSubmitting || !selectedMethod || !usdt || !transactionId.trim()}
           className="w-full h-14 rounded-2xl font-semibold text-lg text-white relative overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           style={{
             background: 'linear-gradient(to right, #5b4bff, #20d3a1)',
