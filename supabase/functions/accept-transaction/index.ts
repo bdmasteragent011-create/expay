@@ -109,30 +109,29 @@ serve(async (req) => {
       let updateData: Record<string, number>;
 
       if (transaction.type === 'pay_in') {
-        // Pay-in: Add to available_credits and total_pay_in
-        newCredits = (agent.available_credits || 0) + transaction.amount;
-        newTotal = (agent.total_pay_in || 0) + transaction.amount;
-        updateData = {
-          available_credits: newCredits,
-          total_pay_in: newTotal
-        };
-        console.log(`Pay-in: Adding ${transaction.amount} to credits. New balance: ${newCredits}`);
-      } else if (transaction.type === 'pay_out') {
-        // Pay-out: Check balance first
+        // Pay-in: Agent receives cash from customer, gives credits → Deduct from available_credits
         if ((agent.available_credits || 0) < transaction.amount) {
           return new Response(
             JSON.stringify({ error: 'Insufficient balance' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        // Deduct from available_credits and add to total_pay_out
         newCredits = (agent.available_credits || 0) - transaction.amount;
+        newTotal = (agent.total_pay_in || 0) + transaction.amount;
+        updateData = {
+          available_credits: newCredits,
+          total_pay_in: newTotal
+        };
+        console.log(`Pay-in: Deducting ${transaction.amount} from credits. New balance: ${newCredits}`);
+      } else if (transaction.type === 'pay_out') {
+        // Pay-out: Agent gives cash to customer, receives credits → Add to available_credits
+        newCredits = (agent.available_credits || 0) + transaction.amount;
         newTotal = (agent.total_pay_out || 0) + transaction.amount;
         updateData = {
           available_credits: newCredits,
           total_pay_out: newTotal
         };
-        console.log(`Pay-out: Deducting ${transaction.amount} from credits. New balance: ${newCredits}`);
+        console.log(`Pay-out: Adding ${transaction.amount} to credits. New balance: ${newCredits}`);
       } else {
         return new Response(
           JSON.stringify({ error: 'Invalid transaction type' }),
@@ -179,8 +178,8 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           message: transaction.type === 'pay_in' 
-            ? `৳${transaction.amount.toLocaleString()} added to your balance`
-            : `৳${transaction.amount.toLocaleString()} deducted from your balance`
+            ? `৳${transaction.amount.toLocaleString()} deducted from your balance`
+            : `৳${transaction.amount.toLocaleString()} added to your balance`
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
