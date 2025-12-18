@@ -13,7 +13,9 @@ import {
   CheckCircle,
   Clock,
   Loader2,
-  Hash
+  Hash,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -50,6 +52,7 @@ export default function Deposit() {
   const [history, setHistory] = useState<DepositRequest[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !agent) {
@@ -92,8 +95,7 @@ export default function Deposit() {
       .from('deposit_requests')
       .select('*, deposit_methods(name)')
       .eq('agent_id', agent.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
+      .order('created_at', { ascending: false });
     if (data) {
       setHistory(data as unknown as DepositRequest[]);
     }
@@ -460,50 +462,76 @@ export default function Deposit() {
           {history.length === 0 ? (
             <p className="text-sm text-center py-4" style={{ color: '#7a7f99' }}>No deposits yet</p>
           ) : (
-            <div className="space-y-3">
-              {history.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="p-3 rounded-xl"
-                  style={{ background: '#f4f5f7' }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium" style={{ color: '#1a1a2e' }}>
-                        ৳{item.amount_bdt.toLocaleString()}
-                      </p>
-                      <p className="text-xs" style={{ color: '#7a7f99' }}>
-                        {item.deposit_methods?.name || 'Unknown'}
-                      </p>
-                      {item.transaction_id && (
-                        <p className="text-xs mt-1" style={{ color: '#7a7f99' }}>
-                          TxID: <span className="font-mono">{item.transaction_id}</span>
+            <>
+              <div className="space-y-3">
+                {(showAllHistory ? history : history.slice(0, 5)).map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="p-3 rounded-xl"
+                    style={{ background: '#f4f5f7' }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium" style={{ color: '#1a1a2e' }}>
+                          ৳{item.amount_bdt.toLocaleString()}
                         </p>
-                      )}
+                        <p className="text-xs" style={{ color: '#7a7f99' }}>
+                          {item.deposit_methods?.name || 'Unknown'}
+                        </p>
+                        {item.transaction_id && (
+                          <p className="text-xs mt-1" style={{ color: '#7a7f99' }}>
+                            TxID: <span className="font-mono">{item.transaction_id}</span>
+                          </p>
+                        )}
+                      </div>
+                      <span 
+                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
+                        style={{
+                          background: item.status === 'approved' 
+                            ? 'rgba(32,211,161,0.1)' 
+                            : item.status === 'rejected'
+                            ? 'rgba(239,68,68,0.1)'
+                            : 'rgba(245,158,11,0.1)',
+                          color: item.status === 'approved' 
+                            ? '#20d3a1' 
+                            : item.status === 'rejected'
+                            ? '#ef4444'
+                            : '#f59e0b',
+                        }}
+                      >
+                        {item.status === 'processing' && <Clock className="w-3 h-3" />}
+                        {item.status === 'approved' && <CheckCircle className="w-3 h-3" />}
+                        {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                      </span>
                     </div>
-                    <span 
-                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
-                      style={{
-                        background: item.status === 'approved' 
-                          ? 'rgba(32,211,161,0.1)' 
-                          : item.status === 'rejected'
-                          ? 'rgba(239,68,68,0.1)'
-                          : 'rgba(245,158,11,0.1)',
-                        color: item.status === 'approved' 
-                          ? '#20d3a1' 
-                          : item.status === 'rejected'
-                          ? '#ef4444'
-                          : '#f59e0b',
-                      }}
-                    >
-                      {item.status === 'processing' && <Clock className="w-3 h-3" />}
-                      {item.status === 'approved' && <CheckCircle className="w-3 h-3" />}
-                      {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              
+              {history.length > 5 && (
+                <button
+                  onClick={() => setShowAllHistory(!showAllHistory)}
+                  className="w-full mt-3 py-2 flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: 'rgba(106,76,255,0.08)',
+                    color: '#6a4cff',
+                    border: '1px solid rgba(106,76,255,0.2)',
+                  }}
+                >
+                  {showAllHistory ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      See All History ({history.length - 5} more)
+                    </>
+                  )}
+                </button>
+              )}
+            </>
           )}
         </div>
       </main>
