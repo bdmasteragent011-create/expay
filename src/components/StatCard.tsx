@@ -64,8 +64,8 @@ export function StatCard({ label, value, icon: Icon, variant = 'primary', onClic
           <Icon className="w-5 h-5 text-white" />
         </div>
       </div>
-      <p className="text-xs mb-1" style={{ color: '#7a7f99' }}>{label}</p>
-      <p className="text-xl font-bold" style={{ color: '#1a1a2e' }}>
+      <p className="text-xs mb-1" style={{ color: '#5a5f79' }}>{label}</p>
+      <p className="text-2xl font-bold" style={{ color: '#0f0f1a' }}>
         ৳{typeof value === 'number' ? value.toLocaleString() : value}
       </p>
     </div>
