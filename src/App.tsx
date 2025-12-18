@@ -17,6 +17,7 @@ import AdminCreateUser from "./pages/admin/AdminCreateUser";
 import AdminEditUser from "./pages/admin/AdminEditUser";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminManageAdmins from "./pages/admin/AdminManageAdmins";
+import AdminDeposits from "./pages/admin/AdminDeposits";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/users/create" element={<AdminCreateUser />} />
             <Route path="/admin/users/:id" element={<AdminEditUser />} />
+            <Route path="/admin/deposits" element={<AdminDeposits />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/manage-admins" element={<AdminManageAdmins />} />
             
