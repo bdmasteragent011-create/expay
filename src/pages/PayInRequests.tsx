@@ -4,8 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { TransactionItem } from '@/components/TransactionItem';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Loader2, Inbox } from 'lucide-react';
+import { ArrowLeft, Loader2, Inbox, History, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 interface Transaction {
   id: string;
@@ -24,6 +25,8 @@ export default function PayInRequests() {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !agent) {
@@ -83,6 +86,7 @@ export default function PayInRequests() {
     const transaction = transactions.find(t => t.id === id);
     if (!transaction || !agent) return;
 
+    setProcessingId(id);
     const { data, error } = await supabase.functions.invoke('accept-transaction', {
       body: { transactionId: id, action: 'accept' }
     });
@@ -93,6 +97,7 @@ export default function PayInRequests() {
         description: data?.error || 'Failed to accept transaction',
         variant: 'destructive',
       });
+      setProcessingId(null);
       return;
     }
 
@@ -103,9 +108,11 @@ export default function PayInRequests() {
 
     await refreshAgent();
     fetchTransactions();
+    setProcessingId(null);
   };
 
   const handleReject = async (id: string) => {
+    setProcessingId(id);
     const { data, error } = await supabase.functions.invoke('accept-transaction', {
       body: { transactionId: id, action: 'reject' }
     });
@@ -116,6 +123,7 @@ export default function PayInRequests() {
         description: data?.error || 'Failed to reject transaction',
         variant: 'destructive',
       });
+      setProcessingId(null);
       return;
     }
 
@@ -125,6 +133,7 @@ export default function PayInRequests() {
     });
 
     fetchTransactions();
+    setProcessingId(null);
   };
 
   if (authLoading || !agent) {
@@ -136,6 +145,8 @@ export default function PayInRequests() {
   }
 
   const pendingTransactions = transactions.filter(t => t.status === 'pending');
+  const historyTransactions = transactions.filter(t => t.status !== 'pending');
+  const displayedHistory = showAllHistory ? historyTransactions : historyTransactions.slice(0, 5);
 
   return (
     <div className="min-h-screen pb-6">
@@ -177,8 +188,56 @@ export default function PayInRequests() {
                 methodNumber={tx.method_number}
                 onAccept={handleAccept}
                 onReject={handleReject}
+                isProcessing={processingId === tx.id}
               />
             ))}
+          </div>
+        )}
+
+        {/* History Section */}
+        {historyTransactions.length > 0 && (
+          <div className="space-y-3 pt-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <History className="w-5 h-5" />
+              <h3 className="font-semibold">History</h3>
+            </div>
+            
+            <div className="space-y-3">
+              {displayedHistory.map((tx) => (
+                <TransactionItem
+                  key={tx.id}
+                  id={tx.id}
+                  type={tx.type}
+                  amount={tx.amount}
+                  status={tx.status}
+                  createdAt={tx.created_at}
+                  transactionId={tx.transaction_id}
+                  methodName={tx.method_name}
+                  methodNumber={tx.method_number}
+                />
+              ))}
+            </div>
+
+            {historyTransactions.length > 5 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAllHistory(!showAllHistory)}
+                className="w-full flex items-center gap-2"
+              >
+                {showAllHistory ? (
+                  <>
+                    <ChevronUp className="w-4 h-4" />
+                    Show Less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4" />
+                    See All History ({historyTransactions.length})
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         )}
       </main>
