@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
         results,
         credentials: {
           admin: { email: 'admin@demo.com', password: 'admin123' },
-          agent: { email: 'agent@demo.com', password: 'demo123', code: 'DEMO001' }
+          agent: { email: 'agent@demo.com', password: 'demo123', code: '77778888' }
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
