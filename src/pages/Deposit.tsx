@@ -173,6 +173,23 @@ export default function Deposit() {
       return;
     }
 
+    const depositAmount = parseFloat(bdt);
+    const newBalance = (agent.available_credits || 0) + depositAmount;
+    const maxCredit = agent.max_credit || 0;
+
+    // Check if deposit would exceed max credit
+    if (maxCredit > 0 && newBalance > maxCredit) {
+      const remainingCapacity = Math.max(0, maxCredit - (agent.available_credits || 0));
+      toast({
+        title: 'Max Credit Limit',
+        description: remainingCapacity > 0 
+          ? `You can only deposit up to ৳${remainingCapacity.toLocaleString()} (Max credit: ৳${maxCredit.toLocaleString()})`
+          : `You have reached your max credit limit of ৳${maxCredit.toLocaleString()}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     const { error } = await supabase
@@ -181,7 +198,7 @@ export default function Deposit() {
         agent_id: agent.id,
         method_id: selectedMethod.id,
         amount_usdt: parseFloat(usdt),
-        amount_bdt: parseFloat(bdt),
+        amount_bdt: depositAmount,
         transaction_id: transactionId.trim(),
       });
 

@@ -100,6 +100,30 @@ export default function AdminDeposits() {
     setProcessing(depositId);
     const deposit = deposits.find(d => d.id === depositId);
 
+    if (action === 'approved' && deposit) {
+      // Check max credit before approving
+      const { data: agent } = await supabase
+        .from('agents')
+        .select('available_credits, max_credit')
+        .eq('id', deposit.agent_id)
+        .single();
+
+      if (agent) {
+        const newBalance = (agent.available_credits || 0) + deposit.amount_bdt;
+        const maxCredit = agent.max_credit || 0;
+
+        if (maxCredit > 0 && newBalance > maxCredit) {
+          toast({ 
+            title: 'Max Credit Exceeded', 
+            description: `This deposit would exceed the user's max credit limit of ৳${maxCredit.toLocaleString()}. Current balance: ৳${(agent.available_credits || 0).toLocaleString()}`,
+            variant: 'destructive' 
+          });
+          setProcessing(null);
+          return;
+        }
+      }
+    }
+
     const { error } = await supabase
       .from('deposit_requests')
       .update({ status: action })
