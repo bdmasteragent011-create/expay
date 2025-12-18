@@ -1,4 +1,5 @@
-import { MessageSquare, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { MessageSquare, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Message {
@@ -13,6 +14,9 @@ interface MessageBoxProps {
 }
 
 export function MessageBox({ messages }: MessageBoxProps) {
+  const [showAll, setShowAll] = useState(false);
+  const displayMessages = showAll ? messages : messages.slice(0, 2);
+
   return (
     <div 
       className="rounded-2xl p-4 animate-slide-up"
@@ -45,24 +49,50 @@ export function MessageBox({ messages }: MessageBoxProps) {
       {messages.length === 0 ? (
         <p className="text-sm text-center py-6" style={{ color: '#7a7f99' }}>No messages yet</p>
       ) : (
-        <div className="space-y-3 max-h-48 overflow-y-auto">
-          {messages.map((message) => (
-            <div 
-              key={message.id}
-              className="p-3 rounded-xl transition-all"
+        <>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {displayMessages.map((message) => (
+              <div 
+                key={message.id}
+                className="p-3 rounded-xl transition-all"
+                style={{
+                  background: message.is_read ? '#f4f5f7' : 'rgba(138,99,255,0.08)',
+                  border: `1px solid ${message.is_read ? 'rgba(0,0,0,0.04)' : 'rgba(138,99,255,0.2)'}`,
+                }}
+              >
+                <p className="text-sm mb-2" style={{ color: '#1a1a2e' }}>{message.content}</p>
+                <div className="flex items-center gap-1 text-xs" style={{ color: '#7a7f99' }}>
+                  <Clock className="w-3 h-3" />
+                  {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {messages.length > 2 && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="w-full mt-3 py-2 flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
               style={{
-                background: message.is_read ? '#f4f5f7' : 'rgba(138,99,255,0.08)',
-                border: `1px solid ${message.is_read ? 'rgba(0,0,0,0.04)' : 'rgba(138,99,255,0.2)'}`,
+                background: 'rgba(138,99,255,0.08)',
+                color: '#8a63ff',
+                border: '1px solid rgba(138,99,255,0.2)',
               }}
             >
-              <p className="text-sm mb-2" style={{ color: '#1a1a2e' }}>{message.content}</p>
-              <div className="flex items-center gap-1 text-xs" style={{ color: '#7a7f99' }}>
-                <Clock className="w-3 h-3" />
-                {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-              </div>
-            </div>
-          ))}
-        </div>
+              {showAll ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  See Message History ({messages.length - 2} more)
+                </>
+              )}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
