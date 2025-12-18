@@ -43,6 +43,23 @@ export default function AdminUsers() {
         sessionStorage.removeItem('highlightedAgent');
         setTimeout(() => setHighlightedId(null), 3000);
       }
+
+      // Realtime subscription for agents
+      const channel = supabase
+        .channel('admin-users-realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'agents' },
+          () => {
+            console.log('Agents updated - refreshing');
+            fetchAgents();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isAdmin]);
 

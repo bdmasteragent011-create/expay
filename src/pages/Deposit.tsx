@@ -66,6 +66,37 @@ export default function Deposit() {
     fetchMethods();
     if (agent) {
       fetchHistory();
+
+      // Realtime subscriptions
+      const settingsChannel = supabase
+        .channel('deposit-settings-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
+          console.log('Settings updated');
+          fetchSettings();
+        })
+        .subscribe();
+
+      const methodsChannel = supabase
+        .channel('deposit-methods-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'deposit_methods' }, () => {
+          console.log('Deposit methods updated');
+          fetchMethods();
+        })
+        .subscribe();
+
+      const historyChannel = supabase
+        .channel('deposit-history-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'deposit_requests', filter: `agent_id=eq.${agent.id}` }, () => {
+          console.log('Deposit history updated');
+          fetchHistory();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(settingsChannel);
+        supabase.removeChannel(methodsChannel);
+        supabase.removeChannel(historyChannel);
+      };
     }
   }, [agent]);
 

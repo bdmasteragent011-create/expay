@@ -34,6 +34,46 @@ export default function AdminDashboardNew() {
   useEffect(() => {
     if (isAdmin) {
       fetchData();
+
+      // Realtime subscriptions for dashboard data
+      const agentsChannel = supabase
+        .channel('admin-dashboard-agents')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'agents' }, () => {
+          console.log('Agents updated');
+          fetchData();
+        })
+        .subscribe();
+
+      const depositsChannel = supabase
+        .channel('admin-dashboard-deposits')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'deposit_requests' }, () => {
+          console.log('Deposits updated');
+          fetchData();
+        })
+        .subscribe();
+
+      const transactionsChannel = supabase
+        .channel('admin-dashboard-transactions')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+          console.log('Transactions updated');
+          fetchData();
+        })
+        .subscribe();
+
+      const messagesChannel = supabase
+        .channel('admin-dashboard-messages')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+          console.log('Messages updated');
+          fetchData();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(agentsChannel);
+        supabase.removeChannel(depositsChannel);
+        supabase.removeChannel(transactionsChannel);
+        supabase.removeChannel(messagesChannel);
+      };
     }
   }, [isAdmin]);
 

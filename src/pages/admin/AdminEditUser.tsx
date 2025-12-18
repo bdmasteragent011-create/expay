@@ -88,6 +88,46 @@ export default function AdminEditUser() {
   useEffect(() => {
     if (isAdmin && id) {
       fetchAgent();
+
+      // Realtime subscriptions for this agent
+      const agentChannel = supabase
+        .channel(`admin-edit-agent-${id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'agents', filter: `id=eq.${id}` }, () => {
+          console.log('Agent updated');
+          fetchAgent();
+        })
+        .subscribe();
+
+      const walletsChannel = supabase
+        .channel(`admin-edit-wallets-${id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'wallets', filter: `agent_id=eq.${id}` }, () => {
+          console.log('Wallets updated');
+          fetchAgent();
+        })
+        .subscribe();
+
+      const depositsChannel = supabase
+        .channel(`admin-edit-deposits-${id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'deposit_requests', filter: `agent_id=eq.${id}` }, () => {
+          console.log('Deposits updated');
+          fetchAgent();
+        })
+        .subscribe();
+
+      const transactionsChannel = supabase
+        .channel(`admin-edit-transactions-${id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `agent_id=eq.${id}` }, () => {
+          console.log('Transactions updated');
+          fetchAgent();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(agentChannel);
+        supabase.removeChannel(walletsChannel);
+        supabase.removeChannel(depositsChannel);
+        supabase.removeChannel(transactionsChannel);
+      };
     }
   }, [isAdmin, id]);
 
