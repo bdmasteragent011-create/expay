@@ -32,6 +32,7 @@ interface DepositRequest {
   amount_bdt: number;
   status: 'processing' | 'approved' | 'rejected';
   created_at: string;
+  transaction_id: string | null;
   deposit_methods: { name: string } | null;
 }
 
@@ -463,36 +464,43 @@ export default function Deposit() {
               {history.map((item) => (
                 <div 
                   key={item.id} 
-                  className="flex items-center justify-between p-3 rounded-xl"
+                  className="p-3 rounded-xl"
                   style={{ background: '#f4f5f7' }}
                 >
-                  <div>
-                    <p className="font-medium" style={{ color: '#1a1a2e' }}>
-                      ৳{item.amount_bdt.toLocaleString()}
-                    </p>
-                    <p className="text-xs" style={{ color: '#7a7f99' }}>
-                      {item.deposit_methods?.name || 'Unknown'}
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium" style={{ color: '#1a1a2e' }}>
+                        ৳{item.amount_bdt.toLocaleString()}
+                      </p>
+                      <p className="text-xs" style={{ color: '#7a7f99' }}>
+                        {item.deposit_methods?.name || 'Unknown'}
+                      </p>
+                      {item.transaction_id && (
+                        <p className="text-xs mt-1" style={{ color: '#7a7f99' }}>
+                          TxID: <span className="font-mono">{item.transaction_id}</span>
+                        </p>
+                      )}
+                    </div>
+                    <span 
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
+                      style={{
+                        background: item.status === 'approved' 
+                          ? 'rgba(32,211,161,0.1)' 
+                          : item.status === 'rejected'
+                          ? 'rgba(239,68,68,0.1)'
+                          : 'rgba(245,158,11,0.1)',
+                        color: item.status === 'approved' 
+                          ? '#20d3a1' 
+                          : item.status === 'rejected'
+                          ? '#ef4444'
+                          : '#f59e0b',
+                      }}
+                    >
+                      {item.status === 'processing' && <Clock className="w-3 h-3" />}
+                      {item.status === 'approved' && <CheckCircle className="w-3 h-3" />}
+                      {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                    </span>
                   </div>
-                  <span 
-                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
-                    style={{
-                      background: item.status === 'approved' 
-                        ? 'rgba(32,211,161,0.1)' 
-                        : item.status === 'rejected'
-                        ? 'rgba(239,68,68,0.1)'
-                        : 'rgba(245,158,11,0.1)',
-                      color: item.status === 'approved' 
-                        ? '#20d3a1' 
-                        : item.status === 'rejected'
-                        ? '#ef4444'
-                        : '#f59e0b',
-                    }}
-                  >
-                    {item.status === 'processing' && <Clock className="w-3 h-3" />}
-                    {item.status === 'approved' && <CheckCircle className="w-3 h-3" />}
-                    {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                  </span>
                 </div>
               ))}
             </div>
