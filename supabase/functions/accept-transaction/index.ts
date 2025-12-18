@@ -126,6 +126,16 @@ serve(async (req) => {
       } else if (transaction.type === 'pay_out') {
         // Pay-out: Agent gives cash to customer, receives credits → Add to available_credits
         newCredits = (agent.available_credits || 0) + transaction.amount;
+        const maxCredit = agent.max_credit || 0;
+        
+        // Check max credit limit
+        if (maxCredit > 0 && newCredits > maxCredit) {
+          return new Response(
+            JSON.stringify({ error: `Cannot accept: Would exceed max credit limit of ৳${maxCredit.toLocaleString()}` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
         newTotal = (agent.total_pay_out || 0) + transaction.amount;
         updateData = {
           available_credits: newCredits,
