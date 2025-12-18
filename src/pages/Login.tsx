@@ -351,7 +351,7 @@ export default function Login() {
                 onClick={() => {
                   setEmail('agent@demo.com');
                   setPassword('demo123');
-                  setActivationCode('DEMO001');
+                  setActivationCode('77778888');
                 }}
                 className="text-xs font-medium px-3 py-1 rounded-full transition-all hover:scale-105 active:scale-95"
                 style={{
@@ -365,7 +365,7 @@ export default function Login() {
             <div className="space-y-1 text-xs" style={{ color: '#7a7f99' }}>
               <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Email:</span> agent@demo.com</p>
               <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Password:</span> demo123</p>
-              <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Code:</span> DEMO001</p>
+              <p><span className="font-medium" style={{ color: '#1a1a2e' }}>Code:</span> 77778888</p>
             </div>
           </div>
 

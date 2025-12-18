@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         email: 'agent@demo.com',
         name: 'Demo Agent',
         agent_id: 'AGENT001',
-        activation_code: 'DEMO001',
+        activation_code: '77778888',
         auth_user_id: agentUserId,
         phone: '+1234567890',
         district: 'Demo District',

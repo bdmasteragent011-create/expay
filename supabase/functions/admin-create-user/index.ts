@@ -57,16 +57,25 @@ serve(async (req) => {
       });
     }
 
-    // Parse request body
-    const { name, email, phone, agent_id, district, activation_code, password } = await req.json();
+    // Parse + normalize request body
+    const body = await req.json();
+
+    const name = String(body?.name ?? '').trim();
+    const email = String(body?.email ?? '').toLowerCase().trim();
+    const phone = body?.phone ? String(body.phone).trim() : null;
+    const agent_id = String(body?.agent_id ?? '').trim();
+    const district = body?.district ? String(body.district).trim() : null;
+    const activation_code = String(body?.activation_code ?? '').trim().toUpperCase();
+    const password = String(body?.password ?? '');
 
     console.log('Creating user:', { email, name, agent_id });
 
-    // Check if email already exists in agents
+    // Check if email already exists in agents (case-insensitive)
     const { data: existingEmail } = await serviceClient
       .from('agents')
       .select('id')
-      .eq('email', email)
+      .ilike('email', email)
+      .limit(1)
       .maybeSingle();
 
     if (existingEmail) {
@@ -76,11 +85,12 @@ serve(async (req) => {
       });
     }
 
-    // Check if activation code already exists
+    // Check if activation code already exists (case-insensitive)
     const { data: existingCode } = await serviceClient
       .from('agents')
       .select('id')
-      .eq('activation_code', activation_code)
+      .ilike('activation_code', activation_code)
+      .limit(1)
       .maybeSingle();
 
     if (existingCode) {
