@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, Plus, Trash2, Settings2, CreditCard, Shield, ChevronRight } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, Settings2, CreditCard, Shield, ChevronRight, Image } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,8 @@ interface Settings {
   site_title: string | null;
   telegram_link: string | null;
   live_chat_link: string | null;
+  telegram_icon_url: string | null;
+  live_chat_icon_url: string | null;
   maintenance_mode: boolean | null;
   dollar_rate: number | null;
 }
@@ -27,6 +29,7 @@ interface DepositMethod {
   number: string | null;
   instructions: string | null;
   is_active: boolean | null;
+  image_url: string | null;
 }
 
 export default function AdminSettings() {
@@ -43,13 +46,15 @@ export default function AdminSettings() {
     site_title: '',
     telegram_link: '',
     live_chat_link: '',
+    telegram_icon_url: '',
+    live_chat_icon_url: '',
     maintenance_mode: false,
   });
 
   // Payment settings
   const [dollarRate, setDollarRate] = useState('');
   const [methods, setMethods] = useState<DepositMethod[]>([]);
-  const [newMethod, setNewMethod] = useState({ name: '', number: '', instructions: '' });
+  const [newMethod, setNewMethod] = useState({ name: '', number: '', instructions: '', image_url: '' });
   const [editingMethod, setEditingMethod] = useState<string | null>(null);
 
   useEffect(() => {
@@ -73,11 +78,13 @@ export default function AdminSettings() {
       .maybeSingle();
 
     if (settingsData) {
-      setSettings(settingsData);
+      setSettings(settingsData as Settings);
       setGeneralForm({
         site_title: settingsData.site_title || '',
         telegram_link: settingsData.telegram_link || '',
         live_chat_link: settingsData.live_chat_link || '',
+        telegram_icon_url: (settingsData as any).telegram_icon_url || '',
+        live_chat_icon_url: (settingsData as any).live_chat_icon_url || '',
         maintenance_mode: settingsData.maintenance_mode || false,
       });
       setDollarRate(String(settingsData.dollar_rate || 125));
@@ -103,8 +110,10 @@ export default function AdminSettings() {
           site_title: generalForm.site_title,
           telegram_link: generalForm.telegram_link,
           live_chat_link: generalForm.live_chat_link,
+          telegram_icon_url: generalForm.telegram_icon_url || null,
+          live_chat_icon_url: generalForm.live_chat_icon_url || null,
           maintenance_mode: generalForm.maintenance_mode,
-        })
+        } as any)
         .eq('id', settings.id);
 
       if (error) {
@@ -118,9 +127,11 @@ export default function AdminSettings() {
         site_title: generalForm.site_title,
         telegram_link: generalForm.telegram_link,
         live_chat_link: generalForm.live_chat_link,
+        telegram_icon_url: generalForm.telegram_icon_url || null,
+        live_chat_icon_url: generalForm.live_chat_icon_url || null,
         maintenance_mode: generalForm.maintenance_mode,
         dollar_rate: 125,
-      });
+      } as any);
 
       if (error) {
         toast({ title: 'Error', description: 'Failed to create settings', variant: 'destructive' });
@@ -159,14 +170,15 @@ export default function AdminSettings() {
       name: newMethod.name,
       number: newMethod.number || null,
       instructions: newMethod.instructions || null,
+      image_url: newMethod.image_url || null,
       is_active: true,
-    });
+    } as any);
 
     if (error) {
       toast({ title: 'Error', description: 'Failed to add method', variant: 'destructive' });
     } else {
       toast({ title: 'Success', description: 'Method added' });
-      setNewMethod({ name: '', number: '', instructions: '' });
+      setNewMethod({ name: '', number: '', instructions: '', image_url: '' });
       fetchSettings();
     }
 
@@ -182,7 +194,8 @@ export default function AdminSettings() {
         name: method.name,
         number: method.number,
         instructions: method.instructions,
-      })
+        image_url: method.image_url,
+      } as any)
       .eq('id', method.id);
 
     if (error) {
@@ -284,6 +297,22 @@ export default function AdminSettings() {
             </div>
 
             <div className="space-y-2">
+              <Label>Telegram Icon URL</Label>
+              <Input
+                value={generalForm.telegram_icon_url}
+                onChange={(e) => setGeneralForm(p => ({ ...p, telegram_icon_url: e.target.value }))}
+                placeholder="https://example.com/telegram-icon.png"
+                className="h-11 rounded-xl"
+              />
+              {generalForm.telegram_icon_url && (
+                <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
+                  <img src={generalForm.telegram_icon_url} alt="Telegram Icon" className="w-8 h-8 rounded object-cover" />
+                  <span className="text-xs text-muted-foreground">Preview</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label>Live Chat Link</Label>
               <Input
                 value={generalForm.live_chat_link}
@@ -291,6 +320,22 @@ export default function AdminSettings() {
                 placeholder="https://..."
                 className="h-11 rounded-xl"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Live Chat Icon URL</Label>
+              <Input
+                value={generalForm.live_chat_icon_url}
+                onChange={(e) => setGeneralForm(p => ({ ...p, live_chat_icon_url: e.target.value }))}
+                placeholder="https://example.com/livechat-icon.png"
+                className="h-11 rounded-xl"
+              />
+              {generalForm.live_chat_icon_url && (
+                <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
+                  <img src={generalForm.live_chat_icon_url} alt="Live Chat Icon" className="w-8 h-8 rounded object-cover" />
+                  <span className="text-xs text-muted-foreground">Preview</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
@@ -380,6 +425,18 @@ export default function AdminSettings() {
                   placeholder="Account number"
                   className="h-10 rounded-xl"
                 />
+                <Input
+                  value={newMethod.image_url}
+                  onChange={(e) => setNewMethod(p => ({ ...p, image_url: e.target.value }))}
+                  placeholder="Logo URL (e.g., https://...)"
+                  className="h-10 rounded-xl"
+                />
+                {newMethod.image_url && (
+                  <div className="flex items-center gap-2 p-2 bg-background rounded-lg">
+                    <img src={newMethod.image_url} alt="Method Logo" className="w-10 h-10 rounded object-cover" />
+                    <span className="text-xs text-muted-foreground">Logo Preview</span>
+                  </div>
+                )}
                 <Textarea
                   value={newMethod.instructions}
                   onChange={(e) => setNewMethod(p => ({ ...p, instructions: e.target.value }))}
@@ -417,6 +474,18 @@ export default function AdminSettings() {
                                 placeholder="Account number"
                                 className="h-9 rounded-lg"
                               />
+                              <Input
+                                value={method.image_url || ''}
+                                onChange={(e) => setMethods(m => m.map(x => x.id === method.id ? { ...x, image_url: e.target.value } : x))}
+                                placeholder="Logo URL"
+                                className="h-9 rounded-lg"
+                              />
+                              {method.image_url && (
+                                <div className="flex items-center gap-2 p-2 bg-background rounded-lg">
+                                  <img src={method.image_url} alt="Method Logo" className="w-8 h-8 rounded object-cover" />
+                                  <span className="text-xs text-muted-foreground">Logo Preview</span>
+                                </div>
+                              )}
                               <Textarea
                                 value={method.instructions || ''}
                                 onChange={(e) => setMethods(m => m.map(x => x.id === method.id ? { ...x, instructions: e.target.value } : x))}
@@ -446,11 +515,16 @@ export default function AdminSettings() {
                               </div>
                             </div>
                           ) : (
-                            <>
-                              <p className="font-medium">{method.name}</p>
-                              {method.number && <p className="text-sm text-muted-foreground">{method.number}</p>}
-                              {method.instructions && <p className="text-xs text-muted-foreground mt-1">{method.instructions}</p>}
-                            </>
+                            <div className="flex items-center gap-3">
+                              {method.image_url && (
+                                <img src={method.image_url} alt={method.name} className="w-10 h-10 rounded-lg object-cover" />
+                              )}
+                              <div>
+                                <p className="font-medium">{method.name}</p>
+                                {method.number && <p className="text-sm text-muted-foreground">{method.number}</p>}
+                                {method.instructions && <p className="text-xs text-muted-foreground mt-1">{method.instructions}</p>}
+                              </div>
+                            </div>
                           )}
                         </div>
                         {editingMethod !== method.id && (

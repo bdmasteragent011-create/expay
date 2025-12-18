@@ -96,6 +96,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_url: string | null
           instructions: string | null
           is_active: boolean | null
           name: string
@@ -104,6 +105,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          image_url?: string | null
           instructions?: string | null
           is_active?: boolean | null
           name: string
@@ -112,6 +114,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          image_url?: string | null
           instructions?: string | null
           is_active?: boolean | null
           name?: string
@@ -203,27 +206,33 @@ export type Database = {
         Row: {
           dollar_rate: number | null
           id: string
+          live_chat_icon_url: string | null
           live_chat_link: string | null
           maintenance_mode: boolean | null
           site_title: string | null
+          telegram_icon_url: string | null
           telegram_link: string | null
           updated_at: string
         }
         Insert: {
           dollar_rate?: number | null
           id?: string
+          live_chat_icon_url?: string | null
           live_chat_link?: string | null
           maintenance_mode?: boolean | null
           site_title?: string | null
+          telegram_icon_url?: string | null
           telegram_link?: string | null
           updated_at?: string
         }
         Update: {
           dollar_rate?: number | null
           id?: string
+          live_chat_icon_url?: string | null
           live_chat_link?: string | null
           maintenance_mode?: boolean | null
           site_title?: string | null
+          telegram_icon_url?: string | null
           telegram_link?: string | null
           updated_at?: string
         }

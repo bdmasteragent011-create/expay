@@ -26,6 +26,7 @@ interface DepositMethod {
   number: string | null;
   instructions: string | null;
   is_active: boolean;
+  image_url: string | null;
 }
 
 interface DepositRequest {
@@ -342,7 +343,7 @@ export default function Deposit() {
               <button
                 key={method.id}
                 onClick={() => setSelectedMethod(method)}
-                className="p-3 text-sm font-medium transition-all"
+                className="p-3 text-sm font-medium transition-all flex flex-col items-center gap-2"
                 style={{
                   borderRadius: '12px',
                   background: selectedMethod?.id === method.id ? 'rgba(106,76,255,0.1)' : '#f4f5f7',
@@ -350,7 +351,10 @@ export default function Deposit() {
                   color: selectedMethod?.id === method.id ? '#6a4cff' : '#7a7f99',
                 }}
               >
-                {method.name}
+                {method.image_url && (
+                  <img src={method.image_url} alt={method.name} className="w-8 h-8 rounded-lg object-cover" />
+                )}
+                <span className="text-xs">{method.name}</span>
               </button>
             ))}
           </div>
@@ -366,7 +370,12 @@ export default function Deposit() {
               border: '1px solid rgba(0,0,0,0.06)',
             }}
           >
-            <h3 className="font-semibold mb-3" style={{ color: '#1a1a2e' }}>Instructions</h3>
+            <div className="flex items-center gap-3 mb-3">
+              {selectedMethod.image_url && (
+                <img src={selectedMethod.image_url} alt={selectedMethod.name} className="w-12 h-12 rounded-xl object-cover" />
+              )}
+              <h3 className="font-semibold" style={{ color: '#1a1a2e' }}>{selectedMethod.name} Instructions</h3>
+            </div>
             
             {selectedMethod.number && (
               <div 
