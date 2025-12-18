@@ -1,7 +1,7 @@
 import { useState, forwardRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, LayoutDashboard, Users, Settings, LogOut, Shield, Sparkles } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Users, Settings, LogOut, Shield, Sparkles, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AdminLayoutProps {
@@ -22,6 +22,7 @@ const AdminLayout = forwardRef<HTMLDivElement, AdminLayoutProps>(({ children }, 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: Users, label: 'Users', path: '/admin/users' },
+    { icon: CreditCard, label: 'Deposits', path: '/admin/deposits' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
