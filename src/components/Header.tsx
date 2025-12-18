@@ -41,9 +41,9 @@ export function Header() {
                 backgroundClip: 'text',
               }}
             >
-              Agent Panel
+              {agent?.name || 'Agent Panel'}
             </h1>
-            <p className="text-xs" style={{ color: '#7a7f99' }}>Mobile Wallet</p>
+            <p className="text-xs" style={{ color: '#7a7f99' }}>{agent?.agent_id || 'Mobile Wallet'}</p>
           </div>
         </div>
         
