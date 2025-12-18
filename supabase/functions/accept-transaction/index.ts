@@ -80,22 +80,22 @@ serve(async (req) => {
 
     console.log(`Transaction type: ${transaction.type}, amount: ${transaction.amount}`);
 
-    // Handle rejection - just update status
+    // Handle rejection - delete the transaction
     if (action === 'reject') {
-      const { error: updateError } = await adminClient
+      const { error: deleteError } = await adminClient
         .from('transactions')
-        .update({ status: 'rejected' })
+        .delete()
         .eq('id', transactionId);
 
-      if (updateError) {
-        console.error('Transaction update error:', updateError);
+      if (deleteError) {
+        console.error('Transaction delete error:', deleteError);
         return new Response(
           JSON.stringify({ error: 'Failed to reject transaction' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      console.log('Transaction rejected successfully');
+      console.log('Transaction rejected and deleted successfully');
       return new Response(
         JSON.stringify({ success: true, message: 'Transaction rejected' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -149,21 +149,7 @@ serve(async (req) => {
         );
       }
 
-      // Update transaction status
-      const { error: txUpdateError } = await adminClient
-        .from('transactions')
-        .update({ status: 'accepted' })
-        .eq('id', transactionId);
-
-      if (txUpdateError) {
-        console.error('Transaction update error:', txUpdateError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to accept transaction' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Update agent balance
+      // Update agent balance first
       const { error: agentUpdateError } = await adminClient
         .from('agents')
         .update(updateData)
@@ -171,19 +157,25 @@ serve(async (req) => {
 
       if (agentUpdateError) {
         console.error('Agent update error:', agentUpdateError);
-        // Rollback transaction status
-        await adminClient
-          .from('transactions')
-          .update({ status: 'pending' })
-          .eq('id', transactionId);
-        
         return new Response(
           JSON.stringify({ error: 'Failed to update balance' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      console.log('Transaction accepted successfully');
+      // Delete the transaction after successful balance update
+      const { error: deleteError } = await adminClient
+        .from('transactions')
+        .delete()
+        .eq('id', transactionId);
+
+      if (deleteError) {
+        console.error('Transaction delete error:', deleteError);
+        // Balance was updated but transaction wasn't deleted - log but don't fail
+        console.log('Warning: Balance updated but transaction deletion failed');
+      }
+
+      console.log('Transaction accepted and deleted successfully');
       return new Response(
         JSON.stringify({ 
           success: true, 

@@ -136,7 +136,6 @@ export default function PayOutRequests() {
   }
 
   const pendingTransactions = transactions.filter(t => t.status === 'pending');
-  const completedTransactions = transactions.filter(t => t.status !== 'pending');
 
   return (
     <div className="min-h-screen pb-6">
@@ -158,52 +157,28 @@ export default function PayOutRequests() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : transactions.length === 0 ? (
+        ) : pendingTransactions.length === 0 ? (
           <div className="card-3d rounded-2xl bg-card p-8 text-center animate-fade-in">
             <Inbox className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No pay out requests</p>
+            <p className="text-muted-foreground">No pending pay out requests</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {pendingTransactions.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Pending</h3>
-                {pendingTransactions.map((tx) => (
-                  <TransactionItem
-                    key={tx.id}
-                    id={tx.id}
-                    type={tx.type}
-                    amount={tx.amount}
-                    status={tx.status}
-                    createdAt={tx.created_at}
-                    transactionId={tx.transaction_id}
-                    methodName={tx.method_name}
-                    methodNumber={tx.method_number}
-                    onAccept={handleAccept}
-                    onReject={handleReject}
-                  />
-                ))}
-              </div>
-            )}
-
-            {completedTransactions.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">History</h3>
-                {completedTransactions.map((tx) => (
-                  <TransactionItem
-                    key={tx.id}
-                    id={tx.id}
-                    type={tx.type}
-                    amount={tx.amount}
-                    status={tx.status}
-                    createdAt={tx.created_at}
-                    transactionId={tx.transaction_id}
-                    methodName={tx.method_name}
-                    methodNumber={tx.method_number}
-                  />
-                ))}
-              </div>
-            )}
+          <div className="space-y-3">
+            {pendingTransactions.map((tx) => (
+              <TransactionItem
+                key={tx.id}
+                id={tx.id}
+                type={tx.type}
+                amount={tx.amount}
+                status={tx.status}
+                createdAt={tx.created_at}
+                transactionId={tx.transaction_id}
+                methodName={tx.method_name}
+                methodNumber={tx.method_number}
+                onAccept={handleAccept}
+                onReject={handleReject}
+              />
+            ))}
           </div>
         )}
       </main>
