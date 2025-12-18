@@ -80,22 +80,22 @@ serve(async (req) => {
 
     console.log(`Transaction type: ${transaction.type}, amount: ${transaction.amount}`);
 
-    // Handle rejection - delete the transaction
+    // Handle rejection - update status to rejected (keeps history)
     if (action === 'reject') {
-      const { error: deleteError } = await adminClient
+      const { error: rejectError } = await adminClient
         .from('transactions')
-        .delete()
+        .update({ status: 'rejected' })
         .eq('id', transactionId);
 
-      if (deleteError) {
-        console.error('Transaction delete error:', deleteError);
+      if (rejectError) {
+        console.error('Transaction reject error:', rejectError);
         return new Response(
           JSON.stringify({ error: 'Failed to reject transaction' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      console.log('Transaction rejected and deleted successfully');
+      console.log('Transaction rejected successfully');
       return new Response(
         JSON.stringify({ success: true, message: 'Transaction rejected' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -163,19 +163,19 @@ serve(async (req) => {
         );
       }
 
-      // Delete the transaction after successful balance update
-      const { error: deleteError } = await adminClient
+      // Update transaction status to accepted (keeps history)
+      const { error: statusError } = await adminClient
         .from('transactions')
-        .delete()
+        .update({ status: 'accepted' })
         .eq('id', transactionId);
 
-      if (deleteError) {
-        console.error('Transaction delete error:', deleteError);
-        // Balance was updated but transaction wasn't deleted - log but don't fail
-        console.log('Warning: Balance updated but transaction deletion failed');
+      if (statusError) {
+        console.error('Transaction status update error:', statusError);
+        // Balance was updated but status wasn't changed - log but don't fail
+        console.log('Warning: Balance updated but transaction status update failed');
       }
 
-      console.log('Transaction accepted and deleted successfully');
+      console.log('Transaction accepted successfully');
       return new Response(
         JSON.stringify({ 
           success: true, 

@@ -1,4 +1,4 @@
-import { ArrowDownCircle, ArrowUpCircle, Check, X, Clock } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, Check, X, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ interface TransactionItemProps {
   methodNumber?: string | null;
   onAccept?: (id: string) => void;
   onReject?: (id: string) => void;
+  isProcessing?: boolean;
 }
 
 export function TransactionItem({ 
@@ -26,7 +27,8 @@ export function TransactionItem({
   methodName,
   methodNumber,
   onAccept, 
-  onReject 
+  onReject,
+  isProcessing = false
 }: TransactionItemProps) {
   const isPayIn = type === 'pay_in';
   const isPending = status === 'pending';
@@ -103,15 +105,21 @@ export function TransactionItem({
             onClick={() => onAccept(id)}
             className="flex-1 gradient-success text-success-foreground btn-3d"
             size="sm"
+            disabled={isProcessing}
           >
-            <Check className="w-4 h-4 mr-1" />
-            Accept
+            {isProcessing ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <Check className="w-4 h-4 mr-1" />
+            )}
+            {isProcessing ? 'Processing...' : 'Accept'}
           </Button>
           <Button 
             onClick={() => onReject(id)}
             variant="outline"
             className="flex-1 border-destructive text-destructive hover:bg-destructive/10"
             size="sm"
+            disabled={isProcessing}
           >
             <X className="w-4 h-4 mr-1" />
             Reject

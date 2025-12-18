@@ -260,12 +260,13 @@ export default function AdminEditUser() {
       return;
     }
 
-    // Create transaction record for history
+    // Create hidden transaction record for admin history only (not visible to user)
     const { error: txError } = await supabase.from('transactions').insert({
       agent_id: id,
       type: 'pay_in' as const,
       amount: Number(creditAmount),
       status: 'accepted' as const,
+      is_user_visible: false, // Admin adjustments are hidden from user pay pages
     });
 
     if (txError) {
@@ -296,12 +297,13 @@ export default function AdminEditUser() {
       return;
     }
 
-    // Create transaction record for history
+    // Create hidden transaction record for admin history only (not visible to user)
     const { error: txError } = await supabase.from('transactions').insert({
       agent_id: id,
       type: 'pay_out' as const,
       amount: Number(creditAmount),
       status: 'accepted' as const,
+      is_user_visible: false, // Admin adjustments are hidden from user pay pages
     });
 
     if (txError) {

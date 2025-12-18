@@ -247,6 +247,7 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          is_user_visible: boolean
           method_name: string | null
           method_number: string | null
           status: Database["public"]["Enums"]["transaction_status"] | null
@@ -258,6 +259,7 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
+          is_user_visible?: boolean
           method_name?: string | null
           method_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"] | null
@@ -269,6 +271,7 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
+          is_user_visible?: boolean
           method_name?: string | null
           method_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"] | null
