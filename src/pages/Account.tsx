@@ -57,7 +57,7 @@ export default function Account() {
     }
   }, [agent]);
 
-  // Realtime subscription for wallets
+  // Realtime subscription for wallets and settings
   useEffect(() => {
     if (!agent?.id) return;
 
@@ -78,8 +78,25 @@ export default function Account() {
       )
       .subscribe();
 
+    const settingsChannel = supabase
+      .channel('account-settings')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'settings',
+        },
+        () => {
+          console.log('Settings updated');
+          fetchSettings();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(walletsChannel);
+      supabase.removeChannel(settingsChannel);
     };
   }, [agent?.id]);
 

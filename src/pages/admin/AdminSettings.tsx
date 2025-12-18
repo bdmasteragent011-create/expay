@@ -64,6 +64,28 @@ export default function AdminSettings() {
   useEffect(() => {
     if (isAdmin) {
       fetchSettings();
+
+      // Realtime subscriptions
+      const settingsChannel = supabase
+        .channel('admin-settings-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
+          console.log('Settings updated');
+          fetchSettings();
+        })
+        .subscribe();
+
+      const methodsChannel = supabase
+        .channel('admin-methods-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'deposit_methods' }, () => {
+          console.log('Deposit methods updated');
+          fetchSettings();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(settingsChannel);
+        supabase.removeChannel(methodsChannel);
+      };
     }
   }, [isAdmin]);
 
