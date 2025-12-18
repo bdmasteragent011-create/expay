@@ -8,11 +8,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   Loader2, ArrowLeft, Save, Plus, Trash2, RefreshCw, 
   User, Key, Shield, Wallet, CreditCard, MessageSquare, 
   ArrowDownCircle, ArrowUpCircle, Percent, TrendingUp,
-  CheckCircle, XCircle, Clock, Sparkles
+  CheckCircle, XCircle, Clock, Sparkles, AlertTriangle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -80,6 +90,8 @@ export default function AdminEditUser() {
   const [walletBalances, setWalletBalances] = useState<{[key: string]: string}>({});
   
   const [saving, setSaving] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAdmin) navigate('/admin/login/zrx');
@@ -476,6 +488,30 @@ export default function AdminEditUser() {
     setSaving(null);
   };
 
+  const handleDeleteUser = async () => {
+    setIsDeleting(true);
+    
+    const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+      body: { agentId: id }
+    });
+
+    if (error || !data?.success) {
+      toast({ 
+        title: 'Error', 
+        description: error?.message || data?.error || 'Failed to delete user', 
+        variant: 'destructive' 
+      });
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    } else {
+      toast({ 
+        title: 'Success', 
+        description: 'User account deleted successfully' 
+      });
+      navigate('/admin/users');
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -605,6 +641,29 @@ export default function AdminEditUser() {
           </div>
           <Button onClick={handleBanToggle} disabled={saving === 'ban'} variant={agent.is_banned ? "default" : "destructive"} className="w-full h-11 rounded-xl">
             {saving === 'ban' ? <Loader2 className="w-4 h-4 animate-spin" /> : agent.is_banned ? 'Unban User' : 'Ban User'}
+          </Button>
+        </div>
+
+        {/* Section: Delete User Account */}
+        <div className="card-3d rounded-2xl bg-card p-5 space-y-4 animate-slide-up border border-destructive/20" style={{ animationDelay: '175ms' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+            </div>
+            <h3 className="font-semibold text-foreground">Danger Zone</h3>
+          </div>
+          <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+            <p className="text-sm text-muted-foreground">
+              Permanently delete this user account. This action cannot be undone. All user data including wallets, transactions, messages, and deposit history will be removed.
+            </p>
+          </div>
+          <Button 
+            onClick={() => setShowDeleteConfirm(true)} 
+            variant="destructive" 
+            className="w-full h-11 rounded-xl"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete User Account
           </Button>
         </div>
 
@@ -941,6 +1000,34 @@ export default function AdminEditUser() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Delete User Account
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete <strong>{agent.name}</strong>'s account? 
+              This will remove all their data including wallets, transactions, messages, and deposit history. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl" disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteUser} 
+              className="rounded-xl bg-destructive hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              {isDeleting ? 'Deleting...' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
