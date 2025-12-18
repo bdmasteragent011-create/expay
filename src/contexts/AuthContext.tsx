@@ -122,56 +122,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const normalizeActivationCode = (code: string) => code.trim().toUpperCase();
+
   const signIn = async (email: string, password: string, activationCode: string) => {
     const normalizedEmail = email.toLowerCase().trim();
-    const normalizedCode = activationCode.trim();
+    const normalizedCode = normalizeActivationCode(activationCode);
 
-    // First verify activation code exists - use ilike for case-insensitive match
-    const { data: agentCheck, error: agentError } = await supabase
-      .from('agents')
-      .select('id, email, is_banned, auth_user_id')
-      .ilike('email', normalizedEmail)
-      .eq('activation_code', normalizedCode)
-      .maybeSingle();
-
-    if (agentError) {
-      console.error('Agent lookup error:', agentError);
-      return { error: 'Error checking credentials' };
+    if (!normalizedEmail || !password || !normalizedCode) {
+      return { error: 'Please enter email, password, and activation code' };
     }
 
-    if (!agentCheck) {
-      // Try to find by email only to give better error message
-      const { data: emailCheck } = await supabase
-        .from('agents')
-        .select('id, activation_code')
-        .ilike('email', normalizedEmail)
-        .maybeSingle();
-
-      if (emailCheck) {
-        return { error: 'Invalid activation code for this account' };
-      }
-      return { error: 'No account found with this email' };
-    }
-
-    if (!agentCheck.auth_user_id) {
-      return { error: 'Account not properly set up. Contact admin.' };
-    }
-
-    if (agentCheck.is_banned) {
-      return { error: 'Your account has been banned. Contact admin.' };
-    }
-
-    // Use the stored email from the agent record for auth
-    const { error } = await supabase.auth.signInWithPassword({
-      email: agentCheck.email,
+    // 1) Authenticate first (agents table is protected by RLS until the user is logged in)
+    const { data: signInData, error: authError } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
       password,
     });
 
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        return { error: 'Incorrect password' };
+    if (authError) {
+      if (authError.message.includes('Invalid login credentials')) {
+        return { error: 'Incorrect email or password' };
       }
-      return { error: error.message };
+      return { error: authError.message };
+    }
+
+    const userId = signInData.user.id;
+
+    // 2) Load agent profile and validate activation code AFTER login
+    const { data: agentRow, error: agentRowError } = await supabase
+      .from('agents')
+      .select('activation_code, is_banned')
+      .eq('auth_user_id', userId)
+      .maybeSingle();
+
+    if (agentRowError || !agentRow) {
+      await supabase.auth.signOut();
+      return { error: 'Account not properly set up. Contact admin.' };
+    }
+
+    if (agentRow.is_banned) {
+      await supabase.auth.signOut();
+      return { error: 'Your account has been banned. Contact admin.' };
+    }
+
+    if (normalizeActivationCode(agentRow.activation_code) !== normalizedCode) {
+      await supabase.auth.signOut();
+      return { error: 'Invalid activation code for this account' };
     }
 
     return { error: null };
