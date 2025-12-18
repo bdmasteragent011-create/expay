@@ -74,48 +74,36 @@ serve(async (req) => {
 
     console.log(`Deleting agent: ${agent.name}`);
 
-    // Delete related records first (cascade should handle most, but let's be explicit)
-    // Delete wallets
-    await adminClient.from('wallets').delete().eq('agent_id', agentId);
-    console.log('Deleted wallets');
-
-    // Delete messages
-    await adminClient.from('messages').delete().eq('agent_id', agentId);
-    console.log('Deleted messages');
-
-    // Delete transactions
-    await adminClient.from('transactions').delete().eq('agent_id', agentId);
-    console.log('Deleted transactions');
-
-    // Delete deposit requests
-    await adminClient.from('deposit_requests').delete().eq('agent_id', agentId);
-    console.log('Deleted deposit requests');
-
-    // Delete agent record
-    const { error: deleteAgentError } = await adminClient
+    // Set is_deleted = true to trigger realtime logout and block future logins
+    const { error: updateError } = await adminClient
       .from('agents')
-      .delete()
+      .update({ is_deleted: true })
       .eq('id', agentId);
 
-    if (deleteAgentError) {
-      console.error('Error deleting agent:', deleteAgentError);
+    if (updateError) {
+      console.error('Error marking agent as deleted:', updateError);
       return new Response(
-        JSON.stringify({ error: 'Failed to delete agent' }),
+        JSON.stringify({ error: 'Failed to delete user' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    console.log('Deleted agent record');
+    console.log('Marked agent as deleted (triggers realtime logout)');
 
-    // Delete auth user if exists
-    if (agent.auth_user_id) {
-      const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(agent.auth_user_id);
-      if (deleteAuthError) {
-        console.error('Error deleting auth user:', deleteAuthError);
-        // Don't fail the whole operation, agent is already deleted
-      } else {
-        console.log('Deleted auth user');
-      }
-    }
+    // Delete related records
+    await adminClient.from('wallets').delete().eq('agent_id', agentId);
+    console.log('Deleted wallets');
+
+    await adminClient.from('messages').delete().eq('agent_id', agentId);
+    console.log('Deleted messages');
+
+    await adminClient.from('transactions').delete().eq('agent_id', agentId);
+    console.log('Deleted transactions');
+
+    await adminClient.from('deposit_requests').delete().eq('agent_id', agentId);
+    console.log('Deleted deposit requests');
+
+    // Note: We keep the agent record (with is_deleted=true) and auth user
+    // so users see "Your account has been deleted" message when trying to login
 
     console.log('User deletion completed successfully');
     return new Response(

@@ -71,7 +71,8 @@ export default function AdminUsers() {
     setIsLoading(true);
     const { data } = await supabase
       .from('agents')
-      .select('id, name, email, agent_id, is_banned, activation_code')
+      .select('id, name, email, agent_id, is_banned, activation_code, is_deleted')
+      .or('is_deleted.is.null,is_deleted.eq.false')
       .order('created_at', { ascending: false });
 
     setAgents(data || []);
