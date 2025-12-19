@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BottomNav } from "@/components/BottomNav";
-import { useScreenProtection } from "@/hooks/useScreenProtection";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Account from "./pages/Account";
@@ -30,9 +29,6 @@ const userPages = ['/dashboard', '/account', '/deposit', '/pay-in-requests', '/p
 const AppContent = () => {
   const location = useLocation();
   const showBottomNav = userPages.includes(location.pathname);
-  
-  // Enable screen protection globally
-  useScreenProtection();
 
   return (
     <>
