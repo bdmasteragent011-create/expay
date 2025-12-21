@@ -290,7 +290,7 @@ export default function Account() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs" style={{ color: '#7a7f99' }}>
+                    <p className="text-sm font-semibold" style={{ color: '#000000' }}>
                       Number: {visibleNumbers[wallet.id] ? wallet.wallet_number : '••••••••••'}
                     </p>
                     <button
