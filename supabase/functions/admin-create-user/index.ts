@@ -26,31 +26,27 @@ serve(async (req) => {
       });
     }
 
-    // Extract JWT token from Authorization header and decode it
-    const token = authHeader.replace('Bearer ', '');
-    
-    // Decode JWT to get user ID (payload is base64 encoded)
-    let userId: string;
-    try {
-      const payloadBase64 = token.split('.')[1];
-      const payload = JSON.parse(atob(payloadBase64));
-      userId = payload.sub;
-      if (!userId) {
-        throw new Error('No user ID in token');
-      }
-      console.log('Decoded user ID from token:', userId);
-    } catch (decodeError) {
-      console.log('Failed to decode token:', decodeError);
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+    // Verify JWT using Supabase auth (cryptographic verification)
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+    if (userError || !user) {
+      console.log('Failed to verify token:', userError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const userId = user.id;
+    console.log('Verified user ID:', userId);
     
     // Create service client
     const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if caller is admin using decoded user ID
+    // Check if caller is admin using verified user ID
     const { data: adminCheck } = await serviceClient
       .from('admin_users')
       .select('id')
