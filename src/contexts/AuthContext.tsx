@@ -172,26 +172,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('auth_user_id', userId)
       .maybeSingle();
 
-    if (agentRowError || !agentRow) {
+    if (agentRowError || !agentRow || agentRow.is_deleted || agentRow.is_banned ||
+        normalizeActivationCode(agentRow?.activation_code ?? '') !== normalizedCode) {
       await supabase.auth.signOut();
-      return { error: 'Account not properly set up. Contact admin.' };
-    }
-
-    // Check if account is deleted
-    if (agentRow.is_deleted) {
-      await supabase.auth.signOut();
-      return { error: 'Your account has been deleted. Contact admin.' };
-    }
-
-    // Check if account is banned
-    if (agentRow.is_banned) {
-      await supabase.auth.signOut();
-      return { error: 'Your account has been banned. Contact admin.' };
-    }
-
-    if (normalizeActivationCode(agentRow.activation_code) !== normalizedCode) {
-      await supabase.auth.signOut();
-      return { error: 'Invalid activation code for this account' };
+      return { error: 'Invalid credentials or account status. Contact admin if you need assistance.' };
     }
 
     return { error: null };
