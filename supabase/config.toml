@@ -1,8 +1,5 @@
 project_id = "zmaaxzcwgmsfoscwmoow"
 
-[functions.seed-demo-accounts]
-verify_jwt = false
-
 [functions.admin-create-user]
 verify_jwt = false
 
@@ -10,4 +7,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.accept-transaction]
-verify_jwt = true
+verify_jwt = false
